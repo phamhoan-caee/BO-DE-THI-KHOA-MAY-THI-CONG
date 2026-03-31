@@ -9,7 +9,7 @@
         :root {
             --caee-blue: #003399; --header-blue: #0040cc;
             --btn-orange: #ff6600; --btn-blue: #3366ff;
-            --success: #28a745; --danger: #dc3545;
+            --success: #2ecc71; --danger: #e74c3c;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -22,28 +22,36 @@
             flex-direction: column; padding: 20px;
         }
 
-        /* --- PHẦN NÂNG CẤP GIAO DIỆN KẾT QUẢ --- */
+        /* --- PHẦN GIAO DIỆN KẾT QUẢ "SÁNG" & HIỆN ĐẠI --- */
         #result-overlay {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0, 0, 0, 0.85); z-index: 10000;
-            justify-content: center; align-items: center; text-align: center;
+            background: rgba(255, 255, 255, 0.85); /* Nền trắng mờ */
+            backdrop-filter: blur(8px); /* Hiệu ứng kính mờ */
+            z-index: 10000;
+            justify-content: center; align-items: center;
         }
 
         .result-card {
-            background: white; padding: 40px; border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 400px; width: 90%;
-            animation: zoomIn 0.4s ease-out;
+            background: #ffffff; 
+            padding: 40px; 
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1); /* Đổ bóng mịn */
+            max-width: 420px; 
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.05);
+            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes zoomIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
-        #res-icon { font-size: 5rem; margin-bottom: 10px; }
-        #res-status { font-size: 2.5rem; margin-bottom: 10px; font-weight: 800; }
-        #res-score { font-size: 1.8rem; color: #444; margin-bottom: 20px; }
-        .divider { height: 2px; background: #eee; margin-bottom: 20px; }
+        #res-icon { font-size: 6rem; margin-bottom: 15px; display: block; }
+        #res-status { font-size: 2.8rem; margin-bottom: 5px; font-weight: 800; text-transform: uppercase; }
+        #res-score { font-size: 1.8rem; color: #2c3e50; margin-bottom: 25px; font-weight: 600; }
+        .divider { height: 1px; background: linear-gradient(to right, transparent, #eee, transparent); margin-bottom: 20px; }
         /* -------------------------------------- */
 
         .caee-header {
@@ -276,24 +284,23 @@
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
         
-        // CẬP NHẬT GIAO DIỆN KẾT QUẢ NÂNG CẤP
+        // CẬP NHẬT GIAO DIỆN KẾT QUẢ TINH CHỈNH
         const resIcon = document.getElementById('res-icon');
         const resStatus = document.getElementById('res-status');
         
         if (score >= 25) {
             resStatus.innerText = "ĐẠT";
-            resStatus.style.color = "var(--success)";
-            resIcon.innerText = "✅";
+            resStatus.style.color = "#2ecc71"; // Xanh lá sáng
+            resIcon.innerHTML = "✨"; // Icon lấp lánh
         } else {
             resStatus.innerText = "KHÔNG ĐẠT";
-            resStatus.style.color = "var(--danger)";
-            resIcon.innerText = "❌";
+            resStatus.style.color = "#e74c3c"; // Đỏ hiện đại
+            resIcon.innerHTML = "🔔"; // Icon chuông báo
         }
         
         document.getElementById('res-score').innerText = `Kết quả: ${score}/30 câu`;
         document.getElementById('result-overlay').style.display = 'flex';
 
-        // Gửi dữ liệu
         const formData = new URLSearchParams();
         formData.append('name', document.getElementById('studentName').value.trim());
         formData.append('studentID', document.getElementById('studentID').value.trim());
@@ -304,7 +311,6 @@
         formData.append('cheat', cheatCount);
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData.toString() });
 
-        // Đếm ngược 5 giây
         let count = 5;
         const countInt = setInterval(() => {
             count--;
