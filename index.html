@@ -240,44 +240,82 @@
         }, 1000);
     }
 
-    async function submitQuiz(auto = false) {
-        if (isSubmitted) return;
-        if (!auto && !confirm("Xác nhận nộp bài?")) return;
-        
-        isSubmitted = true;
-        clearInterval(timerInterval);
-        
-        let score = 0;
-        const labels = ['A', 'B', 'C', 'D'];
-        selectedQuestions.forEach((q, i) => {
-            const ans = studentAnswers.find(a => a.qIndex === i);
-            if (ans) {
-                const idx = q.options.indexOf(ans.selected);
-                if (idx !== -1 && labels[idx] === q.answer) score++;
+  async function submitQuiz(auto = false) {
+    if (isSubmitted) return;
+
+    // 1. Kiểm tra điều kiện đầu vào (Validation)
+    const nameInput = document.getElementById('studentName').value.trim();
+    const idInput = document.getElementById('studentID').value.trim();
+
+    if (!auto) { // Chỉ kiểm tra khi người dùng chủ động nhấn nút Nộp bài
+        if (!nameInput || !idInput) {
+            alert("Vui lòng nhập đầy đủ Họ tên và Mã học viên trước khi nộp bài!");
+            return;
+        }
+        if (!confirm("Xác nhận nộp bài?")) return;
+    }
+
+    // 2. Thiết lập trạng thái đã nộp
+    isSubmitted = true;
+    if (timerInterval) clearInterval(timerInterval);
+    
+    // 3. Tính toán điểm số
+    let score = 0;
+    const labels = ['A', 'B', 'C', 'D'];
+    selectedQuestions.forEach((q, i) => {
+        const ans = studentAnswers.find(a => a.qIndex === i);
+        if (ans) {
+            const idx = q.options.indexOf(ans.selected);
+            if (idx !== -1 && labels[idx] === q.answer) {
+                score++;
             }
+        }
+    });
+
+    const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
+    const isReviewMode = document.getElementById('modeToggle').checked;
+    const modeText = isReviewMode ? "ÔN TẬP" : "THI THẬT";
+    
+    // 4. Hiển thị giao diện kết quả
+    const resIcon = document.getElementById('res-icon');
+    const resStatus = document.getElementById('res-status');
+    const resScore = document.getElementById('res-score');
+    const resultOverlay = document.getElementById('result-overlay');
+
+    if (score >= 25) {
+        resStatus.innerText = "ĐẠT";
+        resStatus.style.color = "#2ecc71";
+        resIcon.innerHTML = "✨";
+    } else {
+        resStatus.innerText = "KHÔNG ĐẠT";
+        resStatus.style.color = "#e74c3c";
+        resIcon.innerHTML = "🔔";
+    }
+    
+    resScore.innerText = `Kết quả: ${score}/30 câu`;
+    resultOverlay.style.display = 'flex';
+
+    // 5. Gửi dữ liệu về Google Sheets thông qua Apps Script
+    const formData = new URLSearchParams();
+    formData.append('name', nameInput);
+    formData.append('studentID', idInput);
+    formData.append('jobName', document.getElementById('job-display-header').innerText);
+    formData.append('score', score);
+    formData.append('status', status);
+    formData.append('mode', modeText);
+    formData.append('cheat', cheatCount);
+
+    try {
+        await fetch(WEB_APP_URL, { 
+            method: "POST", 
+            mode: "no-cors", 
+            body: formData.toString() 
         });
-
-        const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
-        const modeText = document.getElementById('modeToggle').checked ? "ÔN TẬP" : "THI THẬT";
-        
-        const resIcon = document.getElementById('res-icon');
-        const resStatus = document.getElementById('res-status');
-        if (score >= 25) { resStatus.innerText = "ĐẠT"; resStatus.style.color = "#2ecc71"; resIcon.innerHTML = "✨"; }
-        else { resStatus.innerText = "KHÔNG ĐẠT"; resStatus.style.color = "#e74c3c"; resIcon.innerHTML = "🔔"; }
-        
-        document.getElementById('res-score').innerText = `Kết quả: ${score}/30 câu`;
-        document.getElementById('result-overlay').style.display = 'flex';
-
-        // Gửi dữ liệu đồng bộ với Apps Script
-        const formData = new URLSearchParams();
-        formData.append('name', document.getElementById('studentName').value.trim());
-        formData.append('studentID', document.getElementById('studentID').value.trim());
-        formData.append('jobName', document.getElementById('job-display-header').innerText);
-        formData.append('score', score);
-        formData.append('status', status);
-        formData.append('mode', modeText);
-        formData.append('cheat', cheatCount);
-        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData.toString() });
+        console.log("Dữ liệu đã được gửi thành công.");
+    } catch (error) {
+        console.error("Lỗi khi gửi dữ liệu:", error);
+    }
+}
 
         // ĐẾM NGƯỢC 8 GIÂY ĐỂ RE-LOAD
         let count = 8;
