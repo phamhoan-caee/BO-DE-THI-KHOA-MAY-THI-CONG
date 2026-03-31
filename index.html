@@ -69,11 +69,13 @@
     <div id="start-screen">
         <div class="welcome-container">
             <h2 style="text-align:center; color:var(--caee-blue); margin-bottom: 20px;">HỆ THỐNG SÁT HẠCH THI KIỂM TRA</h2>
+            
             <select id="jobType" class="form-control" style="font-weight: bold;">
-                <option value="1538604642">NGHỀ: VẬN HÀNH XE NÂNG HÀNG</option>
-                <option value="798209567">NGHỀ: VẬN HÀNH CẦN TRỤC</option>
-                <option value="1969781180">NGHỀ: VẬN HÀNH CẦU TRỤC</option>
+                <option value="1538604642" data-key="maynang">NGHỀ: VẬN HÀNH XE NÂNG HÀNG</option>
+                <option value="798209567" data-key="cantruc">NGHỀ: VẬN HÀNH CẦN TRỤC</option>
+                <option value="1969781180" data-key="cautruc">NGHỀ: VẬN HÀNH CẦU TRỤC</option>
             </select>
+
             <input type="text" id="studentName" class="form-control" placeholder="Họ và Tên học viên">
             <input type="text" id="studentID" class="form-control" placeholder="Mã học viên / Khóa thi (VD: K01)">
             
@@ -100,35 +102,25 @@
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7h1KNottkL2N-DEBjkUVVlXLblXy25_x1UhqML8WQz3AWeWeXFuvkSQUb4Sxv5eaK5T-VJQEWh4wB/pub?output=csv&gid=";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbybZMcHoswAeQG01RCi7efMKY3NpqasVYDxSIhADkZYS38Nj7_XbrFZG6ozgLXYSzym/exec";
 
-    // BIẾN TOÀN CỤC ĐƯỢC KHỞI TẠO LẠI ĐỂ ĐẢM BẢO KHÔNG BỊ RỖNG
-    let currentStudentName = "";
-    let currentStudentID = "";
-    let currentJobName = "";
-    
+    let currentStudentName = "", currentStudentID = "", currentJobName = "", currentJobKey = "";
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
 
-    window.onblur = () => { 
-        if(!isSubmitted && selectedQuestions.length > 0) { 
-            cheatCount++; 
-            document.getElementById('warning-overlay').style.display = 'flex'; 
-            if(cheatCount >= 3) submitQuiz(true); 
-        } 
-    };
+    window.onblur = () => { if(!isSubmitted && selectedQuestions.length > 0) { cheatCount++; document.getElementById('warning-overlay').style.display = 'flex'; if(cheatCount >= 3) submitQuiz(true); } };
     window.onfocus = () => { document.getElementById('warning-overlay').style.display = 'none'; };
 
     async function startQuiz() {
         const nameVal = document.getElementById('studentName').value.trim();
         const idVal = document.getElementById('studentID').value.trim();
-        const gid = document.getElementById('jobType').value;
-        const jobName = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+        const jobSelect = document.getElementById('jobType');
+        const gid = jobSelect.value;
         
         if(!nameVal || !idVal) return alert("Vui lòng nhập đầy đủ thông tin!");
 
-        // GÁN CỨNG VÀO BIẾN TOÀN CỤC NGAY LẬP TỨC
         currentStudentName = nameVal;
         currentStudentID = idVal;
-        currentJobName = jobName;
+        currentJobName = jobSelect.options[jobSelect.selectedIndex].text;
+        currentJobKey = jobSelect.options[jobSelect.selectedIndex].getAttribute('data-key'); // Lấy key để điều hướng tab
 
         const btn = document.getElementById('btnStartAction');
         btn.disabled = true; btn.innerText = "ĐANG TẢI ĐỀ THI...";
@@ -143,12 +135,9 @@
                     answer: i.DapAnDung ? i.DapAnDung.trim().toUpperCase() : "",
                     explanation: i.Giaithich || "Thực hiện đúng quy trình an toàn kỹ thuật."
                 }));
-                
                 if(allQuestions.length < 30) return alert("Dữ liệu không đủ câu hỏi!");
-                
                 document.getElementById('display-name').innerText = currentStudentName.toUpperCase();
                 document.getElementById('job-display-header').innerText = currentJobName;
-                
                 selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 30);
                 document.getElementById('start-screen').style.display = 'none';
                 document.getElementById('caee-header').style.display = 'flex';
@@ -165,12 +154,9 @@
         const stored = studentAnswers.find(a => a.qIndex === idx);
         const isPractice = document.getElementById('modeToggle').checked;
         const labels = ['A', 'B', 'C', 'D'];
-
         let html = `<div style="margin-bottom:15px;"><span style="color:var(--btn-blue); font-weight:bold;">CÂU HỎI ${idx + 1}/30</span></div>
                     <h3 style="margin-bottom:20px; color:var(--caee-blue); line-height:1.5;">${q.question}</h3>`;
-        if (q.image && q.image.trim() !== "") {
-            html += `<div class="question-image-container"><img src="${q.image}" class="q-img" alt="Hình minh họa"></div>`;
-        }
+        if (q.image) html += `<div class="question-image-container"><img src="${q.image}" class="q-img"></div>`;
         q.options.forEach((opt, i) => {
             let cls = "";
             const isSelected = stored && opt === stored.selected;
@@ -195,9 +181,9 @@
         if(i > -1) studentAnswers[i].selected = ans;
         else studentAnswers.push({qIndex: qIdx, selected: ans});
         showQuestion(qIdx);
-        const isPractice = document.getElementById('modeToggle').checked;
-        if(qIdx === 29 && !isPractice) { setTimeout(() => { submitQuiz(); }, 300); }
-        else if(!isPractice) { setTimeout(() => { if(currentQuestionIndex === qIdx) showQuestion(qIdx + 1); }, 500); }
+        if(!document.getElementById('modeToggle').checked) {
+            setTimeout(() => { if(currentQuestionIndex === qIdx && qIdx < 29) showQuestion(qIdx + 1); }, 500);
+        }
     }
 
     function renderGrid() {
@@ -236,34 +222,27 @@
         });
 
         const statusText = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
+        const isPractice = document.getElementById('modeToggle').checked;
+        
         document.getElementById('res-status').innerText = statusText;
         document.getElementById('res-status').style.color = score >= 25 ? "#2ecc71" : "#e74c3c";
         document.getElementById('res-icon').innerHTML = score >= 25 ? "✨" : "🔔";
         document.getElementById('res-score').innerText = `Kết quả: ${score}/30 câu`;
         document.getElementById('result-overlay').style.display = 'flex';
 
-        // CHUẨN BỊ DỮ LIỆU ĐỂ GỬI ĐI - DÙNG BIẾN TOÀN CỤC ĐÃ LƯU
-        const isPractice = document.getElementById('modeToggle').checked;
-        const params = new URLSearchParams();
-        params.append('name', currentStudentName);
-        params.append('studentID', currentStudentID);
-        params.append('jobID', currentJobName);
-        params.append('score', score + "/30");
-        params.append('status', statusText);
-        params.append('mode', isPractice ? "ÔN TẬP" : "SÁT HẠCH");
-        params.append('cheat', cheatCount > 0 ? "Rời màn hình: " + cheatCount + " lần" : "Nghiêm túc");
+        // Gửi dữ liệu về Google Sheets
+        const params = new URLSearchParams({
+            'name': currentStudentName,
+            'studentID': currentStudentID,
+            'jobKey': currentJobKey, // Key để Google Script biết cần ghi vào tab nào
+            'jobName': currentJobName,
+            'score': score + "/30",
+            'status': statusText,
+            'mode': isPractice ? "ÔN TẬP" : "SÁT HẠCH",
+            'cheat': cheatCount > 0 ? "Rời màn hình: " + cheatCount + " lần" : "Nghiêm túc"
+        });
 
-        // GỬI DỮ LIỆU SANG GOOGLE APPS SCRIPT
-        try {
-            fetch(WEB_APP_URL, { 
-                method: "POST", 
-                mode: "no-cors", 
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString() 
-            });
-        } catch (error) {
-            console.log("Gửi kết quả lỗi: ", error);
-        }
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: params.toString() });
 
         let count = 5;
         const countInt = setInterval(() => {
