@@ -22,12 +22,29 @@
             flex-direction: column; padding: 20px;
         }
 
-        /* Lớp phủ hiển thị kết quả cuối cùng */
+        /* --- PHẦN NÂNG CẤP GIAO DIỆN KẾT QUẢ --- */
         #result-overlay {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(255, 255, 255, 0.98); z-index: 10000;
-            justify-content: center; align-items: center; text-align: center; flex-direction: column;
+            background: rgba(0, 0, 0, 0.85); z-index: 10000;
+            justify-content: center; align-items: center; text-align: center;
         }
+
+        .result-card {
+            background: white; padding: 40px; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 400px; width: 90%;
+            animation: zoomIn 0.4s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        #res-icon { font-size: 5rem; margin-bottom: 10px; }
+        #res-status { font-size: 2.5rem; margin-bottom: 10px; font-weight: 800; }
+        #res-score { font-size: 1.8rem; color: #444; margin-bottom: 20px; }
+        .divider { height: 2px; background: #eee; margin-bottom: 20px; }
+        /* -------------------------------------- */
 
         .caee-header {
             background: var(--header-blue); color: white; padding: 10px 20px;
@@ -82,9 +99,13 @@
     </div>
 
     <div id="result-overlay">
-        <h1 id="res-status" style="font-size: 3rem; margin-bottom: 10px;">---</h1>
-        <h2 id="res-score" style="font-size: 2rem; color: var(--caee-blue); margin-bottom: 20px;">---</h2>
-        <p style="color: #666;">Hệ thống sẽ tự động quay lại trang đăng nhập sau <b id="res-timer">5</b> giây...</p>
+        <div class="result-card">
+            <div id="res-icon"></div>
+            <h1 id="res-status">---</h1>
+            <h2 id="res-score">---</h2>
+            <div class="divider"></div>
+            <p style="color: #888; font-size: 0.9rem;">Hệ thống sẽ tự động quay lại trang chủ sau <b id="res-timer" style="color: var(--btn-blue);">5</b> giây...</p>
+        </div>
     </div>
 
     <div class="caee-header" id="caee-header">
@@ -145,9 +166,7 @@
 
     function activateSecurity() {
         window.addEventListener('beforeunload', (e) => {
-            if (!isSubmitted && selectedQuestions.length > 0) {
-                e.preventDefault(); e.returnValue = ''; 
-            }
+            if (!isSubmitted && selectedQuestions.length > 0) { e.preventDefault(); e.returnValue = ''; }
         });
     }
 
@@ -188,7 +207,6 @@
         currentQuestionIndex = idx;
         const q = selectedQuestions[idx];
         const stored = studentAnswers.find(a => a.qIndex === idx);
-        const isPractice = document.getElementById('modeToggle').checked;
         const labels = ['A', 'B', 'C', 'D'];
 
         let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -197,13 +215,8 @@
                     <h3 style="margin-bottom:25px; color:var(--caee-blue); line-height:1.5;">${q.question}</h3>`;
         
         q.options.forEach((opt, i) => {
-            let cls = "";
-            const isSelected = stored && opt === stored.selected;
-            if (isPractice && stored) {
-                if (labels[i] === q.answer) cls = "correct";
-                else if (isSelected) cls = "wrong";
-            } else if (isSelected) cls = "selected";
-            let action = (isPractice && stored) ? "" : `onclick="selectAns(${idx}, '${opt.replace(/'/g, "\\'")}')"`;
+            let cls = stored && opt === stored.selected ? "selected" : "";
+            let action = `onclick="selectAns(${idx}, '${opt.replace(/'/g, "\\'")}')"`;
             html += `<div class="option-item ${cls}" ${action}><b>${labels[i]}.</b>&nbsp;${opt}</div>`;
         });
 
@@ -219,16 +232,9 @@
         const i = studentAnswers.findIndex(a => a.qIndex === qIdx);
         if(i > -1) studentAnswers[i].selected = ans;
         else studentAnswers.push({qIndex: qIdx, selected: ans});
-        
         showQuestion(qIdx);
-        
-        // NẾU LÀ CÂU CUỐI CÙNG (CÂU 30), GỌI HÀM NỘP BÀI
-        if(qIdx === 29) {
-            setTimeout(() => { submitQuiz(); }, 300);
-        } else if(!document.getElementById('modeToggle').checked) {
-            // Tự chuyển câu nếu đang ở chế độ thi
-            setTimeout(() => { if(currentQuestionIndex === qIdx) showQuestion(qIdx + 1); }, 500);
-        }
+        if(qIdx === 29) { setTimeout(() => { submitQuiz(); }, 300); }
+        else { setTimeout(() => { if(currentQuestionIndex === qIdx) showQuestion(qIdx + 1); }, 500); }
     }
 
     function renderGrid() {
@@ -258,7 +264,6 @@
         isSubmitted = true;
         clearInterval(timerInterval);
         
-        // 1. Tính điểm
         let score = 0;
         const labels = ['A', 'B', 'C', 'D'];
         selectedQuestions.forEach((q, i) => {
@@ -271,15 +276,24 @@
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
         
-        // 2. Hiển thị lớp phủ kết quả
-        const resOverlay = document.getElementById('result-overlay');
+        // CẬP NHẬT GIAO DIỆN KẾT QUẢ NÂNG CẤP
+        const resIcon = document.getElementById('res-icon');
         const resStatus = document.getElementById('res-status');
-        resStatus.innerText = status;
-        resStatus.style.color = score >= 25 ? "var(--success)" : "var(--danger)";
-        document.getElementById('res-score').innerText = `Điểm của bạn: ${score}/30`;
-        resOverlay.style.display = 'flex';
+        
+        if (score >= 25) {
+            resStatus.innerText = "ĐẠT";
+            resStatus.style.color = "var(--success)";
+            resIcon.innerText = "✅";
+        } else {
+            resStatus.innerText = "KHÔNG ĐẠT";
+            resStatus.style.color = "var(--danger)";
+            resIcon.innerText = "❌";
+        }
+        
+        document.getElementById('res-score').innerText = `Kết quả: ${score}/30 câu`;
+        document.getElementById('result-overlay').style.display = 'flex';
 
-        // 3. Gửi dữ liệu (Chạy ngầm)
+        // Gửi dữ liệu
         const formData = new URLSearchParams();
         formData.append('name', document.getElementById('studentName').value.trim());
         formData.append('studentID', document.getElementById('studentID').value.trim());
@@ -288,18 +302,14 @@
         formData.append('status', status);
         formData.append('mode', document.getElementById('modeToggle').checked ? "ÔN TẬP" : "THI THẬT");
         formData.append('cheat', cheatCount);
-
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData.toString() });
 
-        // 4. Đếm ngược 5 giây để quay về trang chủ
+        // Đếm ngược 5 giây
         let count = 5;
         const countInt = setInterval(() => {
             count--;
             document.getElementById('res-timer').innerText = count;
-            if(count <= 0) {
-                clearInterval(countInt);
-                location.reload();
-            }
+            if(count <= 0) { clearInterval(countInt); location.reload(); }
         }, 1000);
     }
 </script>
