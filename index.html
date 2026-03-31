@@ -22,6 +22,13 @@
             flex-direction: column; padding: 20px;
         }
 
+        /* Lớp phủ hiển thị kết quả cuối cùng */
+        #result-overlay {
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(255, 255, 255, 0.98); z-index: 10000;
+            justify-content: center; align-items: center; text-align: center; flex-direction: column;
+        }
+
         .caee-header {
             background: var(--header-blue); color: white; padding: 10px 20px;
             display: none; justify-content: space-between; align-items: center;
@@ -74,6 +81,12 @@
         <div style="font-size: 1.2rem; margin-top: 10px;">Vui lòng quay lại màn hình thi ngay lập tức.</div>
     </div>
 
+    <div id="result-overlay">
+        <h1 id="res-status" style="font-size: 3rem; margin-bottom: 10px;">---</h1>
+        <h2 id="res-score" style="font-size: 2rem; color: var(--caee-blue); margin-bottom: 20px;">---</h2>
+        <p style="color: #666;">Hệ thống sẽ tự động quay lại trang đăng nhập sau <b id="res-timer">5</b> giây...</p>
+    </div>
+
     <div class="caee-header" id="caee-header">
         <div style="flex-grow: 1; text-align: center;">
             <div style="font-weight: bold; font-size: clamp(12px, 4vw, 16px);">TRƯỜNG CAO ĐẲNG CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
@@ -121,7 +134,6 @@
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
 
-    // Bảo mật: Cảnh báo rời màn hình
     window.onblur = () => { 
         if(!isSubmitted && selectedQuestions.length > 0) { 
             cheatCount++; 
@@ -137,14 +149,6 @@
                 e.preventDefault(); e.returnValue = ''; 
             }
         });
-        window.addEventListener('keydown', (e) => {
-            if ((e.keyCode === 116) || (e.ctrlKey && e.keyCode === 82)) {
-                if (!isSubmitted && selectedQuestions.length > 0) {
-                    e.preventDefault();
-                    alert("⚠️ Hệ thống đã khóa tính năng tải lại trang để đảm bảo tính minh bạch!");
-                }
-            }
-        });
     }
 
     async function startQuiz() {
@@ -156,47 +160,25 @@
         if(!name || !id) return alert("Vui lòng nhập đầy đủ Họ tên và Mã học viên!");
 
         const btn = document.getElementById('btnStartAction');
-        btn.disabled = true;
-        btn.innerText = "ĐANG TẢI ĐỀ THI...";
+        btn.disabled = true; btn.innerText = "ĐANG TẢI ĐỀ THI...";
 
         Papa.parse(BASE_CSV_URL + gid, {
-            download: true, 
-            header: true, 
-            skipEmptyLines: true,
+            download: true, header: true, skipEmptyLines: true,
             complete: function(results) {
-                allQuestions = results.data
-                    .filter(i => i.CauHoi && i.CauHoi.trim() !== "")
-                    .map(i => ({
-                        question: i.CauHoi,
-                        options: [i.A, i.B, i.C, i.D].filter(o => o && o.trim() !== ""),
-                        answer: i.DapAnDung ? i.DapAnDung.trim().toUpperCase() : "",
-                        explanation: i.Giaithich || "Thực hiện đúng quy trình ATKT."
-                    }));
-
-                if(allQuestions.length < 30) {
-                    btn.disabled = false;
-                    btn.innerText = "VÀO THI NGAY ➔";
-                    return alert("Dữ liệu ngân hàng câu hỏi không đủ 30 câu! Vui lòng báo quản trị viên.");
-                }
-
+                allQuestions = results.data.filter(i => i.CauHoi && i.CauHoi.trim() !== "").map(i => ({
+                    question: i.CauHoi,
+                    options: [i.A, i.B, i.C, i.D].filter(o => o && o.trim() !== ""),
+                    answer: i.DapAnDung ? i.DapAnDung.trim().toUpperCase() : "",
+                    explanation: i.Giaithich || "Thực hiện đúng quy trình ATKT."
+                }));
+                if(allQuestions.length < 30) return alert("Dữ liệu không đủ 30 câu!");
                 document.getElementById('display-name').innerText = name.toUpperCase();
                 document.getElementById('job-display-header').innerText = jobName;
-                
-                // Trộn ngẫu nhiên và lấy 30 câu
                 selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 30);
-                
                 document.getElementById('start-screen').style.display = 'none';
                 document.getElementById('caee-header').style.display = 'flex';
                 document.getElementById('quiz-screen').style.display = 'grid';
-                
-                activateSecurity();
-                showQuestion(0);
-                startTimer();
-            },
-            error: function(err) {
-                btn.disabled = false;
-                btn.innerText = "VÀO THI NGAY ➔";
-                alert("Lỗi kết nối máy chủ dữ liệu CSV!");
+                activateSecurity(); showQuestion(0); startTimer();
             }
         });
     }
@@ -217,30 +199,20 @@
         q.options.forEach((opt, i) => {
             let cls = "";
             const isSelected = stored && opt === stored.selected;
-            
             if (isPractice && stored) {
                 if (labels[i] === q.answer) cls = "correct";
                 else if (isSelected) cls = "wrong";
             } else if (isSelected) cls = "selected";
-
             let action = (isPractice && stored) ? "" : `onclick="selectAns(${idx}, '${opt.replace(/'/g, "\\'")}')"`;
             html += `<div class="option-item ${cls}" ${action}><b>${labels[i]}.</b>&nbsp;${opt}</div>`;
         });
 
-        if(isPractice && stored) {
-            html += `<div style="background:#fff3cd; padding:15px; border-radius:8px; border-left:5px solid #ffa000; margin-top:15px; font-size:0.95rem;">
-                        <b>💡 Giải thích:</b> ${q.explanation}
-                     </div>`;
-        }
-        
         html += `<div style="display:flex; justify-content:space-between; margin-top:30px; gap:15px;">
                     <button class="btn-start" style="background:var(--btn-blue);" onclick="showQuestion(${idx-1})" ${idx===0?'disabled':''}>❮ LÙI LẠI</button>
                     <button class="btn-start" style="background:var(--btn-blue);" onclick="showQuestion(${idx+1})" ${idx===29?'disabled':''}>TIẾP THEO ❯</button>
                 </div>`;
-                
         document.getElementById('quiz-content').innerHTML = html;
         renderGrid();
-        window.scrollTo(0,0);
     }
 
     function selectAns(qIdx, ans) {
@@ -250,8 +222,11 @@
         
         showQuestion(qIdx);
         
-        // Tự động chuyển câu sau 0.5s nếu chưa phải câu cuối
-        if(!document.getElementById('modeToggle').checked && qIdx < 29) {
+        // NẾU LÀ CÂU CUỐI CÙNG (CÂU 30), GỌI HÀM NỘP BÀI
+        if(qIdx === 29) {
+            setTimeout(() => { submitQuiz(); }, 300);
+        } else if(!document.getElementById('modeToggle').checked) {
+            // Tự chuyển câu nếu đang ở chế độ thi
             setTimeout(() => { if(currentQuestionIndex === qIdx) showQuestion(qIdx + 1); }, 500);
         }
     }
@@ -263,7 +238,7 @@
             const hasAns = studentAnswers.some(a => a.qIndex === i);
             const active = i === currentQuestionIndex ? 'border:3px solid var(--btn-orange);' : '';
             const bg = hasAns ? 'background:var(--caee-blue); color:white;' : 'background:white;';
-            grid.innerHTML += `<div onclick="showQuestion(${i})" style="height:40px; display:flex; justify-content:center; align-items:center; border-radius:5px; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; ${bg} ${active}">${i+1}</div>`;
+            grid.innerHTML += `<div onclick="showQuestion(${i})" style="height:40px; display:flex; justify-content:center; align-items:center; border-radius:5px; cursor:pointer; font-weight:bold; ${bg} ${active}">${i+1}</div>`;
         });
     }
 
@@ -271,38 +246,18 @@
         timerInterval = setInterval(() => {
             timeLeft--;
             let m = Math.floor(timeLeft/60), s = timeLeft%60;
-            const display = document.getElementById('timer');
-            display.innerText = `${m}:${s<10?'0':''}${s}`;
-            
-            if(timeLeft <= 180) { // Còn 3 phút
-                display.style.background = "#ffc107"; 
-                display.style.color = "#000";
-            }
-            if(timeLeft <= 60) { // Còn 1 phút
-                display.classList.add('blink-now');
-                display.style.background = "red";
-                display.style.color = "white";
-            }
+            document.getElementById('timer').innerText = `${m}:${s<10?'0':''}${s}`;
             if(timeLeft <= 0) submitQuiz(true);
         }, 1000);
     }
 
     async function submitQuiz(auto = false) {
         if (isSubmitted) return;
-        
-        if (!auto) {
-            const unanswered = 30 - studentAnswers.length;
-            const msg = unanswered > 0 ? `Bạn còn ${unanswered} câu chưa làm. Vẫn muốn nộp bài?` : "Xác nhận nộp bài thi?";
-            if (!confirm(msg)) return;
-        }
+        if (!auto && !confirm("Xác nhận nộp bài thi?")) return;
         
         isSubmitted = true;
         clearInterval(timerInterval);
         
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "ĐANG GỬI...";
-
         // 1. Tính điểm
         let score = 0;
         const labels = ['A', 'B', 'C', 'D'];
@@ -315,34 +270,37 @@
         });
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
-        const modeText = document.getElementById('modeToggle').checked ? "ÔN TẬP" : "THI THẬT";
         
-        alert(`KẾT QUẢ: ${score}/30 câu. \nTrạng thái: ${status}`);
+        // 2. Hiển thị lớp phủ kết quả
+        const resOverlay = document.getElementById('result-overlay');
+        const resStatus = document.getElementById('res-status');
+        resStatus.innerText = status;
+        resStatus.style.color = score >= 25 ? "var(--success)" : "var(--danger)";
+        document.getElementById('res-score').innerText = `Điểm của bạn: ${score}/30`;
+        resOverlay.style.display = 'flex';
 
-        // 2. Gửi dữ liệu
+        // 3. Gửi dữ liệu (Chạy ngầm)
         const formData = new URLSearchParams();
         formData.append('name', document.getElementById('studentName').value.trim());
         formData.append('studentID', document.getElementById('studentID').value.trim());
         formData.append('jobName', document.getElementById('job-display-header').innerText);
         formData.append('score', score);
         formData.append('status', status);
-        formData.append('mode', modeText);
+        formData.append('mode', document.getElementById('modeToggle').checked ? "ÔN TẬP" : "THI THẬT");
         formData.append('cheat', cheatCount);
 
-        try {
-            await fetch(WEB_APP_URL, { 
-                method: "POST", 
-                mode: "no-cors", 
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData.toString() 
-            });
-            alert("Hệ thống đã ghi nhận kết quả thành công!");
-        } catch (e) { 
-            console.error(e);
-            alert("Lỗi kết nối khi gửi điểm! Vui lòng chụp ảnh màn hình kết quả."); 
-        } finally {
-            location.reload();
-        }
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData.toString() });
+
+        // 4. Đếm ngược 5 giây để quay về trang chủ
+        let count = 5;
+        const countInt = setInterval(() => {
+            count--;
+            document.getElementById('res-timer').innerText = count;
+            if(count <= 0) {
+                clearInterval(countInt);
+                location.reload();
+            }
+        }, 1000);
     }
 </script>
 </body>
