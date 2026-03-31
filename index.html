@@ -15,6 +15,22 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body { background-color: #f0f2f5; font-family: 'Segoe UI', Arial, sans-serif; padding-top: 70px; }
 
+        /* Style hiển thị ảnh trong câu hỏi */
+        .question-image-container {
+            text-align: center;
+            margin: 15px 0;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .q-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+        }
+
         #warning-overlay {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(220, 53, 69, 0.95); color: white; z-index: 9999;
@@ -22,7 +38,6 @@
             flex-direction: column; padding: 20px;
         }
 
-        /* --- GIAO DIỆN KẾT QUẢ HIỆN ĐẠI --- */
         #result-overlay {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px);
@@ -43,7 +58,6 @@
         #res-score { font-size: 1.8rem; color: #2c3e50; margin-bottom: 25px; font-weight: 600; }
         .divider { height: 1px; background: linear-gradient(to right, transparent, #eee, transparent); margin-bottom: 20px; }
 
-        /* --- GIAO DIỆN CHÍNH --- */
         .caee-header {
             background: var(--header-blue); color: white; padding: 10px 20px;
             display: none; justify-content: space-between; align-items: center;
@@ -71,7 +85,6 @@
         .option-item:hover:not(.disabled) { background: #f8f9fa; border-color: var(--btn-blue); }
         .option-item.selected { background: #e7f0ff; border-color: var(--btn-blue); color: var(--caee-blue); }
         
-        /* Màu ôn tập */
         .option-item.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; }
         .option-item.wrong { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; }
 
@@ -168,8 +181,10 @@
         Papa.parse(BASE_CSV_URL + gid, {
             download: true, header: true, skipEmptyLines: true,
             complete: function(results) {
+                // ĐÃ SỬA: Lấy dữ liệu từ cột "HINH ANH" (có dấu cách)
                 allQuestions = results.data.filter(i => i.CauHoi).map(i => ({
                     question: i.CauHoi,
+                    image: i["HINH ANH"] || "", 
                     options: [i.A, i.B, i.C, i.D].filter(o => o && o.trim() !== ""),
                     answer: i.DapAnDung ? i.DapAnDung.trim().toUpperCase() : "",
                     explanation: i.Giaithich || "Thực hiện đúng quy trình an toàn kỹ thuật."
@@ -195,13 +210,19 @@
         const labels = ['A', 'B', 'C', 'D'];
 
         let html = `<div style="margin-bottom:15px;"><span style="color:var(--btn-blue); font-weight:bold;">CÂU HỎI ${idx + 1}/30</span></div>
-                    <h3 style="margin-bottom:25px; color:var(--caee-blue); line-height:1.5;">${q.question}</h3>`;
+                    <h3 style="margin-bottom:20px; color:var(--caee-blue); line-height:1.5;">${q.question}</h3>`;
+        
+        // HIỂN THỊ HÌNH ẢNH NẾU CÓ DỮ LIỆU TRONG CỘT "HINH ANH"
+        if (q.image && q.image.trim() !== "") {
+            html += `<div class="question-image-container">
+                        <img src="${q.image}" class="q-img" alt="Hình minh họa">
+                     </div>`;
+        }
         
         q.options.forEach((opt, i) => {
             let cls = "";
             const isSelected = stored && opt === stored.selected;
             
-            // Xử lý màu sắc trong chế độ ôn tập
             if (isPractice && stored) {
                 if (labels[i] === q.answer) cls = "correct";
                 else if (isSelected) cls = "wrong";
@@ -211,7 +232,6 @@
             html += `<div class="option-item ${cls}" ${action}><b>${labels[i]}.</b>&nbsp;${opt}</div>`;
         });
 
-        // Hiện giải thích trong chế độ ôn tập
         if (isPractice && stored) {
             html += `<div class="explanation-box"><b>Giải thích:</b> ${q.explanation}</div>`;
         }
