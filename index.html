@@ -93,8 +93,8 @@
                 <option value="798209567">NGHỀ: VẬN HÀNH CẦN TRỤC</option>
                 <option value="1969781180">NGHỀ: VẬN HÀNH CẦU TRỤC</option>
             </select>
-            <input type="text" id="studentName" class="form-control" placeholder="Họ và Tên học viên" oninput="this.value = this.value.toUpperCase()">
-            <input type="text" id="studentID" class="form-control" placeholder="Mã học viên / Khóa thi (VD: K01)" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="studentName" class="form-control" placeholder="HỌ VÀ TÊN HỌC VIÊN" oninput="this.value = this.value.toUpperCase()">
+            <input type="text" id="studentID" class="form-control" placeholder="MÃ HỌC VIÊN / KHÓA THI" oninput="this.value = this.value.toUpperCase()">
             
             <div style="display:flex; align-items:center; margin: 20px 0; justify-content: center; gap:10px;">
                 <input type="checkbox" id="modeToggle" style="width:20px; height:20px; cursor:pointer;">
@@ -118,7 +118,7 @@
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7h1KNottkL2N-DEBjkUVVlXLblXy25_x1UhqML8WQz3AWeWeXFuvkSQUb4Sxv5eaK5T-VJQEWh4wB/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzXRIbRdlLprG6fZnKFdpPp8l2VbTi8335kQDWObbgdfx84I2U527zIyYHefsPYDVK0/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpSb4hOrlclKYsuPWs4rP9gNrFd5vjrMWw6B-vCfULYlf0V5WHzJRV7_qNZPaqeFc/exec";
 
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -133,7 +133,7 @@
         setTimeout(() => {
             document.getElementById('loading-screen').style.display = 'none';
             startQuiz();
-        }, 3000);
+        }, 3000); // Đợi 3 giây đúng yêu cầu
     }
 
     async function startQuiz() {
@@ -195,9 +195,9 @@
 
         if (!document.getElementById('modeToggle').checked) {
             if (qIdx < 29) {
-                autoNextTimeout = setTimeout(() => { showQuestion(qIdx + 1); }, 1000);
+                autoNextTimeout = setTimeout(() => { showQuestion(qIdx + 1); }, 1000); // Chuyển câu tự động sau 1s
             } else {
-                // Câu cuối: Chờ 0.5s rồi hiện xác nhận nộp bài
+                // Câu 30: Hiện xác nhận nộp bài ngay sau 0.5s
                 setTimeout(() => { submitQuiz(); }, 500);
             }
         }
@@ -225,7 +225,7 @@
 
     async function submitQuiz(auto = false) {
         if (isSubmitted) return;
-        if (!auto && !confirm("Bạn đồng ý nộp bài?")) return;
+        if (!auto && !confirm("BẠN ĐỒNG Ý NỘP BÀI?")) return;
         
         isSubmitted = true;
         clearInterval(timerInterval);
@@ -234,12 +234,15 @@
         const labels = ['A', 'B', 'C', 'D'];
         selectedQuestions.forEach((q, i) => {
             const ans = studentAnswers.find(a => a.qIndex === i);
-            if (ans && labels[q.options.indexOf(ans.selected)] === q.answer) score++;
+            if (ans) {
+                const idx = q.options.indexOf(ans.selected);
+                if (idx !== -1 && labels[idx] === q.answer) score++;
+            }
         });
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
         
-        // Gửi dữ liệu ngầm về App Script
+        // Gửi dữ liệu ngầm
         const formData = new URLSearchParams();
         formData.append('name', document.getElementById('studentName').value);
         formData.append('studentID', document.getElementById('studentID').value);
@@ -250,7 +253,7 @@
         formData.append('cheat', cheatCount);
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData.toString() });
 
-        // Hiển thị Modal kết quả
+        // HIỂN THỊ MODAL KẾT QUẢ ĐÃ THIẾT KẾ LẠI
         const modal = document.getElementById('result-modal');
         const icon = document.getElementById('res-icon');
         const statusDiv = document.getElementById('res-status');
@@ -269,7 +272,7 @@
         }
         modal.style.display = 'flex';
 
-        // Đếm ngược 5 giây rồi reload
+        // ĐẾM NGƯỢC 5 GIÂY TỰ RELOAD
         let timeLeftResult = 5;
         const countdownInterval = setInterval(() => {
             timeLeftResult--;
