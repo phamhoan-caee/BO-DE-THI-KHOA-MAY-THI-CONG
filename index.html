@@ -15,7 +15,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body { background-color: #f0f2f5; font-family: 'Segoe UI', Arial, sans-serif; padding-top: 60px; }
 
-        /* MODAL KẾT QUẢ HIỆN ĐẠI */
+        /* MODAL KẾT QUẢ HIỆN ĐẠI TƯƠI SÁNG */
         #result-modal {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px);
@@ -41,7 +41,7 @@
         .loader { border: 5px solid #f3f3f3; border-top: 5px solid var(--caee-blue); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* CSS CẤU TRÚC CHÍNH */
+        /* CẤU TRÚC GIAO DIỆN */
         .caee-header { background: var(--header-blue); color: white; padding: 10px 20px; display: none; justify-content: space-between; align-items: center; position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .timer-box { background: #ff3333; padding: 5px 15px; border-radius: 4px; font-weight: bold; min-width: 70px; text-align: center; }
         #start-screen { min-height: 80vh; display: flex; justify-content: center; align-items: center; }
@@ -197,6 +197,7 @@
             if (qIdx < 29) {
                 autoNextTimeout = setTimeout(() => { showQuestion(qIdx + 1); }, 1000);
             } else {
+                // Câu cuối: Chờ 0.5s rồi hiện xác nhận nộp bài
                 setTimeout(() => { submitQuiz(); }, 500);
             }
         }
@@ -209,7 +210,7 @@
             const hasAns = studentAnswers.some(a => a.qIndex === i);
             const active = i === currentQuestionIndex ? 'border:3px solid var(--btn-orange);' : '';
             const bg = hasAns ? 'background:var(--caee-blue); color:white;' : 'background:white;';
-            grid.innerHTML += `<div onclick="showQuestion(${i})" style="height:40px; display:flex; justify-content:center; align-items:center; border-radius:5px; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.05); ${bg} ${active}">${i+1}</div>`;
+            grid.innerHTML += `<div onclick="showQuestion(${i})" style="height:40px; display:flex; justify-content:center; align-items:center; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.05); ${bg} ${active}">${i+1}</div>`;
         });
     }
 
@@ -238,7 +239,7 @@
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
         
-        // Gửi dữ liệu ngầm
+        // Gửi dữ liệu ngầm về App Script
         const formData = new URLSearchParams();
         formData.append('name', document.getElementById('studentName').value);
         formData.append('studentID', document.getElementById('studentID').value);
@@ -249,7 +250,7 @@
         formData.append('cheat', cheatCount);
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData.toString() });
 
-        // HIỂN THỊ KẾT QUẢ VÀ TỰ ĐỘNG CHUYỂN TRANG SAU 5 GIÂY
+        // Hiển thị Modal kết quả
         const modal = document.getElementById('result-modal');
         const icon = document.getElementById('res-icon');
         const statusDiv = document.getElementById('res-status');
@@ -268,14 +269,14 @@
         }
         modal.style.display = 'flex';
 
-        // BỘ ĐẾM NGƯỢC 5 GIÂY ĐỂ CHUYỂN TRANG
+        // Đếm ngược 5 giây rồi reload
         let timeLeftResult = 5;
         const countdownInterval = setInterval(() => {
             timeLeftResult--;
             countSpan.innerText = timeLeftResult;
             if (timeLeftResult <= 0) {
                 clearInterval(countdownInterval);
-                location.reload(); // Tự động load lại trang (về màn hình đăng nhập)
+                location.reload();
             }
         }, 1000);
     }
