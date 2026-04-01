@@ -249,7 +249,7 @@
         formData.append('jobName', document.getElementById('job-display-header').innerText);
         formData.append('score', score);
         formData.append('status', status);
-        formData.append('mode', document.getElementById('modeToggle').checked ? "ONTAP" : "THI");
+        formData.append('mode', document.getElementById('modeToggle').checked ? "ontap" : "thi");
         formData.append('cheat', cheatCount);
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData.toString() });
 
