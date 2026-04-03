@@ -14,17 +14,18 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
-        body { 
-            background: linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), 
-                        url('https://i.postimg.cc/m2nGkT9F/anh-xuong-mtc.png'); 
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            padding-top: 70px; 
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+       body { 
+    /* Giảm thông số từ 0.75 xuống 0.3 để ảnh sáng và rõ hơn */
+    background: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)), 
+                url('https://i.postimg.cc/m2nGkT9F/anh-xuong-mtc.png'); 
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    font-family: 'Segoe UI', Arial, sans-serif; 
+    padding-top: 70px; 
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
         /* --- TỐI ƯU GIAO DIỆN ĐĂNG NHẬP (BƯỚC 3) --- */
         #start-screen { 
