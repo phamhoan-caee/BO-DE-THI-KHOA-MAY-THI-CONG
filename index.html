@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HỆ THỐNG SÁT HẠCH NGHỀ KHOA MÁY THI CÔNG - CAEE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
@@ -18,37 +18,46 @@
             background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), 
                         url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop'); 
             background-size: cover; background-attachment: fixed; background-position: center;
-            font-family: 'Segoe UI', Arial, sans-serif; padding-top: 85px; min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif; padding-top: 60px; min-height: 100vh;
             overflow-x: hidden; /* Chống tràn ngang tuyệt đối */
         }
 
-        /* HEADER TỐI ƯU SIÊU GỌN */
+        /* HEADER TỐI ƯU SIÊU GỌN CHÚ Ý SUPPORT IPHONE NOTCH */
         .caee-header {
-            background: var(--header-blue); color: white; padding: 5px 10px;
+            background: var(--header-blue); color: white; 
+            padding: 5px 10px; padding-top: calc(5px + env(safe-area-inset-top));
             display: none; justify-content: space-between; align-items: center;
             position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            min-height: 70px;
+            min-height: 55px;
         }
 
-        .timer-box { background: #ff3333; padding: 6px; border-radius: 6px; font-weight: bold; min-width: 55px; text-align: center; font-size: 0.85rem; }
+        .timer-box { background: #ff3333; padding: 4px 8px; border-radius: 6px; font-weight: bold; min-width: 55px; text-align: center; font-size: 0.85rem; }
 
         /* KHUNG CHỨA CHÍNH TỰ THÍCH ỨNG */
         .welcome-container, #quiz-content, .sidebar-right > div, .result-card { 
             background: rgba(255, 255, 255, 0.98) !important; 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px; padding: 12px; 
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border-radius: 10px; padding: 12px; 
             box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
-            width: 96%; max-width: 500px; margin: 10px auto;
+            width: 96%; max-width: 500px; margin: 8px auto;
         }
 
-        #quiz-content { max-width: 1000px; width: 96%; margin-top: 0; }
+        #quiz-content { max-width: 1000px; width: 96%; margin-top: 0; padding: 15px; }
 
         .progress-container { width: 100%; background: #eee; height: 6px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--success); width: 0%; transition: 0.3s; }
 
         .ai-box {
             width: 100%; background: #000; border-radius: 8px; overflow: hidden;
-            aspect-ratio: 16/9; margin-bottom: 10px; border: 1px solid #ddd;
+            aspect-ratio: 16/9; margin-bottom: 12px; border: 2px solid #fff;
+        }
+
+        #start-screen { min-height: 85vh; display: flex; align-items: center; justify-content: center; }
+        .form-control { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; outline: none; }
+        
+        .btn-start { 
+            background: var(--success); color: white; border: none; width: 100%; padding: 12px; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem;
         }
 
         /* BỐ CỤC THI */
@@ -60,33 +69,26 @@
         }
         .option-item.selected { background: #e7f0ff; border-color: var(--btn-blue); color: var(--caee-blue); font-weight: 600; }
 
-        .form-control { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
-
-        /* TỐI ƯU CHO MOBILE - QUAN TRỌNG NHẤT */
+        /* TỐI ƯU CHO MOBILE - QUAN TRỌNG NHẤT ĐỂ CO GIAO DIỆN */
         @media (max-width: 768px) {
-            body { padding-top: 80px; }
-            .caee-header b { font-size: 10px; white-space: normal; line-height: 1.2; }
-            #job-display-header { font-size: 10px !important; }
+            body { padding-top: 70px; }
+            .caee-header b { font-size: 9px; white-space: normal; line-height: 1.1; }
+            #job-display-header { font-size: 10px !important; margin: 1px 0 !important; }
             #display-name { font-size: 10px; }
             
             #quiz-screen { grid-template-columns: 1fr; padding: 0; }
             .sidebar-right { order: 2; width: 100%; padding: 0 8px; }
-            #quiz-content { width: 98%; padding: 10px; }
+            #quiz-content { width: 98%; padding: 10px; margin-bottom: 0; }
             
-            #question-layout { display: flex !important; flex-direction: column !important; }
-            .ai-side { order: -1; margin-bottom: 10px; }
+            #question-layout { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+            .ai-side { order: -1; margin-bottom: 0; } /* Ảnh lên đầu để tiết kiệm chỗ */
             
-            /* Thu nhỏ các nút sơ đồ câu hỏi để không tràn màn hình */
+            /* Thu nhỏ các nút sơ đồ câu hỏi tối đa */
             #nav-grid { grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; }
-            #nav-grid div { height: 28px !important; font-size: 0.7rem !important; }
+            #nav-grid div { height: 28px !important; font-size: 0.7rem !important; border-width: 1px !important; }
             
-            h3 { font-size: 0.95rem !important; }
+            h3 { font-size: 0.95rem !important; margin-bottom: 8px !important; }
             .btn-start { padding: 10px !important; font-size: 1rem !important; }
-        }
-
-        .btn-start { 
-            background: var(--success); color: white; border: none; width: 100%; padding: 12px; 
-            border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem;
         }
 
         #warning-overlay {
@@ -101,10 +103,10 @@
     <div id="warning-overlay">⚠️ CẢNH BÁO!<br>Không rời khỏi màn hình thi.</div>
 
     <div class="caee-header" id="caee-header">
-        <div style="flex-grow: 1; margin-right: 10px;">
+        <div style="flex-grow: 1; margin-right: 10px; overflow: hidden;">
             <b style="color: #fff; text-transform: uppercase;">Cao đẳng Cơ điện Nông nghiệp & MT</b>
-            <div id="job-display-header" style="color: #ffd700; font-size: 11px; font-weight: bold; margin: 2px 0;">ĐANG TẢI...</div>
-            <div style="font-size: 10px;">Học viên: <span id="display-name" style="font-weight: bold;">---</span></div>
+            <div id="job-display-header" style="color: #ffd700; font-size: 11px; font-weight: bold; margin: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ĐANG TẢI...</div>
+            <div style="font-size: 11px;">Học viên: <span id="display-name" style="font-weight: bold;">---</span></div>
         </div>
         <div id="timer" class="timer-box">20:00</div>
     </div>
@@ -141,7 +143,7 @@
             <div>
                 <h4 style="margin-bottom:8px; text-align:center; font-size: 0.8rem; color: var(--caee-blue);">SƠ ĐỒ CÂU HỎI</h4>
                 <div id="nav-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px;"></div>
-                <button id="submitBtn" class="btn-start" style="margin-top:12px; background-color: var(--caee-blue); padding: 8px; font-size: 0.9rem;" onclick="submitQuiz()">NỘP BÀI</button>
+                <button id="submitBtn" class="btn-start" style="margin-top:12px; background-color: var(--caee-blue); padding: 10px; font-size: 0.9rem;" onclick="submitQuiz()">NỘP BÀI</button>
             </div>
         </div>
     </div>
