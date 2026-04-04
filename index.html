@@ -162,7 +162,7 @@
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7h1KNottkL2N-DEBjkUVVlXLblXy25_x1UhqML8WQz3AWeWeXFuvkSQUb4Sxv5eaK5T-VJQEWh4wB/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyVojY_hSnDSex9ftp8ur9o9w0b21W_U-pT2YMKzKkuP8KVEm44XTvBAPTOnLlJzg3o/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyVojY_hSnDSex9ftp8ur9o9w0b21W_U-pT2YMKzKkuP8KVEm44XTvBAPTOnLlJzg3o/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentIdx = 0, timeLeft = 1200, timerInterval, isSubmitted = false;
@@ -261,7 +261,7 @@
         });
 
         document.getElementById('res-score').innerText = score;
-        document.getElementById('rank-status').innerText = score >= 25 ? "VICTORY" : "DEFEAT";
+        document.getElementById('rank-status').innerText = score >= 25 ? "ĐẠT" : "TRƯỢT";
         document.getElementById('rank-status').style.color = score >= 25 ? "var(--success)" : "var(--danger)";
         
         document.getElementById('quiz-screen').style.display = 'none';
