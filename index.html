@@ -15,98 +15,103 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body { 
-            background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
+            background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), 
                         url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070&auto=format&fit=crop'); 
             background-size: cover; background-attachment: fixed; background-position: center;
-            font-family: 'Segoe UI', Arial, sans-serif; padding-top: 70px; min-height: 100vh;
+            font-family: 'Segoe UI', Arial, sans-serif; padding-top: 85px; min-height: 100vh;
+            overflow-x: hidden; /* Chống tràn ngang tuyệt đối */
         }
 
-        /* HEADER TỐI ƯU */
+        /* HEADER TỐI ƯU SIÊU GỌN */
         .caee-header {
-            background: var(--header-blue); color: white; padding: 8px 12px;
+            background: var(--header-blue); color: white; padding: 5px 10px;
             display: none; justify-content: space-between; align-items: center;
             position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            min-height: 70px;
         }
 
-        .timer-box { background: #ff3333; padding: 5px 10px; border-radius: 6px; font-weight: bold; min-width: 65px; text-align: center; font-size: 0.9rem; }
+        .timer-box { background: #ff3333; padding: 6px; border-radius: 6px; font-weight: bold; min-width: 55px; text-align: center; font-size: 0.85rem; }
 
-        /* KHUNG CHỨA CHÍNH */
+        /* KHUNG CHỨA CHÍNH TỰ THÍCH ỨNG */
         .welcome-container, #quiz-content, .sidebar-right > div, .result-card { 
-            background: rgba(255, 255, 255, 0.95) !important; 
+            background: rgba(255, 255, 255, 0.98) !important; 
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px; padding: 15px; 
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            width: 95%; max-width: 500px; margin: 10px auto;
+            border-radius: 12px; padding: 12px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+            width: 96%; max-width: 500px; margin: 10px auto;
         }
 
-        #quiz-content { max-width: 1000px; width: 100%; margin-top: 0; }
+        #quiz-content { max-width: 1000px; width: 96%; margin-top: 0; }
 
-        .progress-container { width: 100%; background: #eee; height: 6px; border-radius: 10px; margin: 8px 0; overflow: hidden; }
+        .progress-container { width: 100%; background: #eee; height: 6px; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--success); width: 0%; transition: 0.3s; }
 
         .ai-box {
             width: 100%; background: #000; border-radius: 8px; overflow: hidden;
-            aspect-ratio: 16/9; margin-bottom: 12px; border: 2px solid #fff;
-        }
-
-        #start-screen { min-height: 85vh; display: flex; align-items: center; justify-content: center; }
-        .form-control { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
-        
-        .btn-start { 
-            background: var(--success); color: white; border: none; width: 100%; padding: 14px; 
-            border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem;
+            aspect-ratio: 16/9; margin-bottom: 10px; border: 1px solid #ddd;
         }
 
         /* BỐ CỤC THI */
-        #quiz-screen { padding: 10px; display: none; grid-template-columns: 1fr 280px; gap: 15px; max-width: 1200px; margin: auto; }
+        #quiz-screen { padding: 5px; display: none; grid-template-columns: 1fr 280px; gap: 15px; max-width: 1200px; margin: auto; }
         
         .option-item {
-            border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 8px;
-            cursor: pointer; background: white; display: flex; align-items: center; font-size: 0.95rem; line-height: 1.4;
+            border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 8px;
+            cursor: pointer; background: white; display: flex; align-items: center; font-size: 0.9rem; line-height: 1.3;
         }
         .option-item.selected { background: #e7f0ff; border-color: var(--btn-blue); color: var(--caee-blue); font-weight: 600; }
 
-        /* TỐI ƯU CHO ĐIỆN THOẠI (MEDIA QUERY) */
-        @media (max-width: 800px) {
-            body { padding-top: 100px; }
-            .caee-header { flex-direction: row; font-size: 11px; padding: 5px 10px; }
-            .caee-header b { font-size: 11px; }
+        .form-control { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+
+        /* TỐI ƯU CHO MOBILE - QUAN TRỌNG NHẤT */
+        @media (max-width: 768px) {
+            body { padding-top: 80px; }
+            .caee-header b { font-size: 10px; white-space: normal; line-height: 1.2; }
+            #job-display-header { font-size: 10px !important; }
+            #display-name { font-size: 10px; }
             
-            #quiz-screen { grid-template-columns: 1fr; padding: 5px; }
-            .sidebar-right { order: 2; width: 100%; }
-            #quiz-content { width: 100%; padding: 10px; margin-bottom: 0; }
+            #quiz-screen { grid-template-columns: 1fr; padding: 0; }
+            .sidebar-right { order: 2; width: 100%; padding: 0 8px; }
+            #quiz-content { width: 98%; padding: 10px; }
             
             #question-layout { display: flex !important; flex-direction: column !important; }
-            .ai-side { order: -1; margin-bottom: 10px; } /* Ảnh lên đầu trên điện thoại */
+            .ai-side { order: -1; margin-bottom: 10px; }
             
-            #nav-grid { grid-template-columns: repeat(6, 1fr) !important; }
-            h3 { font-size: 1rem !important; }
+            /* Thu nhỏ các nút sơ đồ câu hỏi để không tràn màn hình */
+            #nav-grid { grid-template-columns: repeat(6, 1fr) !important; gap: 4px !important; }
+            #nav-grid div { height: 28px !important; font-size: 0.7rem !important; }
+            
+            h3 { font-size: 0.95rem !important; }
+            .btn-start { padding: 10px !important; font-size: 1rem !important; }
+        }
+
+        .btn-start { 
+            background: var(--success); color: white; border: none; width: 100%; padding: 12px; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.1rem;
         }
 
         #warning-overlay {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(220, 53, 69, 0.95); color: white; z-index: 9999;
-            justify-content: center; align-items: center; text-align: center; font-size: 1.2rem; padding: 20px;
+            justify-content: center; align-items: center; text-align: center; font-size: 1.1rem; padding: 20px;
         }
     </style>
 </head>
 <body oncontextmenu="return false">
 
-    <div id="warning-overlay">⚠️ CẢNH BÁO!<br>Vui lòng không rời khỏi màn hình thi.</div>
+    <div id="warning-overlay">⚠️ CẢNH BÁO!<br>Không rời khỏi màn hình thi.</div>
 
     <div class="caee-header" id="caee-header">
-        <div style="flex-grow: 1; max-width: 70%;">
-            <b style="display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">CAO ĐẲNG CƠ ĐIỆN NÔNG NGHIỆP & MT</b>
-            <div id="job-display-header" style="color: #ffd700; font-size: 11px; font-weight: bold;">ĐANG TẢI...</div>
-            <div style="font-size: 11px;">Học viên: <span id="display-name" style="font-weight: bold;">---</span></div>
+        <div style="flex-grow: 1; margin-right: 10px;">
+            <b style="color: #fff; text-transform: uppercase;">Cao đẳng Cơ điện Nông nghiệp & MT</b>
+            <div id="job-display-header" style="color: #ffd700; font-size: 11px; font-weight: bold; margin: 2px 0;">ĐANG TẢI...</div>
+            <div style="font-size: 10px;">Học viên: <span id="display-name" style="font-weight: bold;">---</span></div>
         </div>
         <div id="timer" class="timer-box">20:00</div>
     </div>
 
     <div id="start-screen">
         <div class="welcome-container">
-            <h2 style="text-align:center; color:var(--caee-blue); margin-bottom: 15px; font-size: 1.2rem;">HỆ THỐNG SÁT HẠCH - CAEE</h2>
+            <h2 style="text-align:center; color:var(--caee-blue); margin-bottom: 12px; font-size: 1.1rem;">HỆ THỐNG SÁT HẠCH - CAEE</h2>
             <select id="jobType" class="form-control" style="font-weight: bold; color: var(--caee-blue);" onchange="preloadQuestions()">
                 <option value="1538604642">NGHỀ: VẬN HÀNH XE NÂNG HÀNG</option>
                 <option value="798209567">NGHỀ: VẬN HÀNH CẦN TRỤC</option>
@@ -116,14 +121,14 @@
             <input type="text" id="studentName" placeholder="HỌ VÀ TÊN HỌC VIÊN" class="form-control" style="text-transform: uppercase;">
             <input type="text" id="studentDOB" placeholder="Ngày/tháng/năm sinh" class="form-control">
 
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="khoaThi" value="Khóa: 4/2026" class="form-control" style="flex: 1.2; background: #f8f8f8;" readonly>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="khoaThi" value="Tháng: 4/2026" class="form-control" style="flex: 1.2; background: #f8f8f8;" readonly>
                 <input type="password" id="maThi" placeholder="Mã thi" class="form-control" style="flex: 1; border: 2px solid var(--btn-orange);">
             </div>
 
-            <div style="display:flex; align-items:center; margin: 10px 0; justify-content: center; gap:8px;">
+            <div style="display:flex; align-items:center; margin: 8px 0; justify-content: center; gap:8px;">
                 <input type="checkbox" id="modeToggle" style="width:18px; height:18px;">
-                <label for="modeToggle" style="cursor:pointer; font-weight: 600; font-size: 0.9rem;">Chế độ Ôn tập</label>
+                <label for="modeToggle" style="cursor:pointer; font-weight: 600; font-size: 0.85rem;">Chế độ Ôn tập</label>
             </div>
 
             <button class="btn-start" id="btnStart" onclick="validateAndStart()">BẮT ĐẦU SÁT HẠCH ➔</button>
@@ -134,19 +139,19 @@
         <div id="quiz-content"></div>
         <div class="sidebar-right">
             <div>
-                <h4 style="margin-bottom:10px; text-align:center; font-size: 0.85rem; color: var(--caee-blue);">SƠ ĐỒ CÂU HỎI</h4>
-                <div id="nav-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:5px;"></div>
-                <button id="submitBtn" class="btn-start" style="margin-top:15px; background-color: var(--caee-blue); padding: 10px;" onclick="submitQuiz()">NỘP BÀI</button>
+                <h4 style="margin-bottom:8px; text-align:center; font-size: 0.8rem; color: var(--caee-blue);">SƠ ĐỒ CÂU HỎI</h4>
+                <div id="nav-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px;"></div>
+                <button id="submitBtn" class="btn-start" style="margin-top:12px; background-color: var(--caee-blue); padding: 8px; font-size: 0.9rem;" onclick="submitQuiz()">NỘP BÀI</button>
             </div>
         </div>
     </div>
 
-    <div id="result-screen" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; padding:15px;">
-        <div class="result-card" style="text-align:center; max-width: 350px;">
-            <h2 style="color: var(--caee-blue); font-size: 1.4rem;">KẾT QUẢ</h2>
-            <div id="res-name" style="font-weight:bold; margin: 10px 0; text-transform: uppercase;">---</div>
-            <div style="font-size: 2.8rem; font-weight: 800; color: var(--header-blue);" id="res-score">0</div>
-            <div style="font-size: 1.1rem; margin-bottom: 15px; font-weight: bold;" id="res-badge">---</div>
+    <div id="result-screen" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; padding:15px;">
+        <div class="result-card" style="text-align:center; max-width: 320px;">
+            <h2 style="color: var(--caee-blue); font-size: 1.3rem;">KẾT QUẢ</h2>
+            <div id="res-name" style="font-weight:bold; margin: 8px 0; text-transform: uppercase; font-size: 0.9rem;">---</div>
+            <div style="font-size: 2.5rem; font-weight: 800; color: var(--header-blue);" id="res-score">0</div>
+            <div style="font-size: 1rem; margin-bottom: 12px; font-weight: bold;" id="res-badge">---</div>
             <button class="btn-start" onclick="location.reload()">THOÁT</button>
         </div>
     </div>
@@ -217,7 +222,7 @@
             <div class="progress-container"><div class="progress-bar" style="width: ${((idx+1)/30)*100}%"></div></div>
             <div id="question-layout" style="display: grid; grid-template-columns: 1fr 280px; gap: 15px;">
                 <div class="question-main">
-                    <h3 style="margin-bottom:12px; font-size:1.05rem; color: #333;">Câu ${idx + 1}: ${q.question}</h3>
+                    <h3 style="margin-bottom:12px; font-size:1rem; color: #333;">Câu ${idx + 1}: ${q.question}</h3>
                     <div id="options-list">`;
 
         q.options.forEach((opt, i) => {
@@ -235,9 +240,9 @@
                     </div>
                 </div>
             </div>
-            <div style="display:flex; justify-content:space-between; margin-top:15px; gap: 10px;">
-                <button class="btn-start" style="background:#6c757d; padding: 12px;" onclick="showQuestion(${idx-1})" ${idx===0?'disabled':''}>TRƯỚC</button>
-                <button class="btn-start" style="background:var(--btn-blue); padding: 12px;" onclick="showQuestion(${idx+1})" ${idx===29?'disabled':''}>TIẾP THEO</button>
+            <div style="display:flex; justify-content:space-between; margin-top:15px; gap: 8px;">
+                <button class="btn-start" style="background:#6c757d; padding: 10px; flex:1;" onclick="showQuestion(${idx-1})" ${idx===0?'disabled':''}>TRƯỚC</button>
+                <button class="btn-start" style="background:var(--btn-blue); padding: 10px; flex:1;" onclick="showQuestion(${idx+1})" ${idx===29?'disabled':''}>TIẾP THEO</button>
             </div>`;
         
         document.getElementById('quiz-content').innerHTML = html;
