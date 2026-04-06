@@ -207,182 +207,204 @@
         </div>
     </div>
 
-    <script>
-        const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7h1KNottkL2N-DEBjkUVVlXLblXy25_x1UhqML8WQz3AWeWeXFuvkSQUb4Sxv5eaK5T-VJQEWh4wB/pub?output=csv&gid=";
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmpU33n1oc5US8h-XE9F9QdVUsFFwHuFrXS0DlubJaApctwaPMxIw9wIwtGy88xPw4pQ/exec";
+  <script>
+    const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7h1KNottkL2N-DEBjkUVVlXLblXy25_x1UhqML8WQz3AWeWeXFuvkSQUb4Sxv5eaK5T-VJQEWh4wB/pub?output=csv&gid=";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmpU33n1oc5US8h-XE9F9QdVUsFFwHuFrXS0DlubJaApctwaPMxIw9wIwtGy88xPw4pQ/exec";
+    
+    let allQuestions = [], selectedQuestions = [], studentAnswers = [];
+    let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
+
+    // Tải trước dữ liệu ngay khi mở trang
+    window.onload = preloadQuestions;
+
+    function preloadQuestions() {
+        const gid = document.getElementById('jobType').value;
+        Papa.parse(BASE_CSV_URL + gid, {
+            download: true, header: true, skipEmptyLines: true,
+            complete: function(results) {
+                allQuestions = results.data.filter(i => i.CauHoi).map(i => ({
+                    question: i.CauHoi,
+                    options: [i.A, i.B, i.C, i.D].filter(o => o),
+                    answer: i.DapAnDung ? i.DapAnDung.trim().toUpperCase() : "",
+                    explanation: i.Giaithich || "Thực hiện đúng quy trình an toàn.",
+                    image: i["HINH ANH"] || "" 
+                }));
+                console.log("Data preloaded for GID: " + gid);
+            }
+        });
+    }
+
+    window.onblur = () => { 
+        if(!isSubmitted && selectedQuestions.length > 0) { 
+            cheatCount++; 
+            document.getElementById('warning-overlay').style.display = 'flex'; 
+            if(cheatCount >= 3) submitQuiz(true); 
+        } 
+    };
+    window.onfocus = () => { document.getElementById('warning-overlay').style.display = 'none'; };
+
+    async function validateAndStart() {
+        const maThi = document.getElementById('maThi').value.trim();
+        const name = document.getElementById('studentName').value.trim();
+        const dob = document.getElementById('studentDOB').value.trim();
         
-        let allQuestions = [], selectedQuestions = [], studentAnswers = [];
-        let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
+        if(!name || !maThi || !dob) return alert("Vui lòng nhập đầy đủ: Tên, Ngày sinh và Mã thi!");
 
-        window.onload = preloadQuestions;
+        const btn = document.getElementById('btnStart');
+        btn.disabled = true; 
+        btn.innerText = "ĐANG KIỂM TRA...";
 
-        function preloadQuestions() {
-            const gid = document.getElementById('jobType').value;
-            Papa.parse(BASE_CSV_URL + gid, {
-                download: true, header: true, skipEmptyLines: true,
-                complete: function(results) {
-                    allQuestions = results.data.filter(i => i.CauHoi).map(i => ({
-                        question: i.CauHoi,
-                        options: [i.A, i.B, i.C, i.D].filter(o => o),
-                        answer: i.DapAnDung ? i.DapAnDung.trim().toUpperCase() : "",
-                        explanation: i.Giaithich || "Thực hiện đúng quy trình kỹ thuật vận hành và an toàn.",
-                        image: i["HINH ANH"] || "" 
-                    }));
-                }
-            });
+        try {
+            const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${maThi}`);
+            const result = await res.json();
+            
+            if(result.isValid) {
+                startQuiz();
+            } else { 
+                alert("Mã thi không đúng!"); 
+                btn.disabled = false; 
+                btn.innerText = "VÀO THI NGAY ➔"; 
+            }
+        } catch(e) { 
+            alert("Lỗi kết nối Server! Vui lòng thử lại."); 
+            btn.disabled = false; 
+            btn.innerText = "VÀO THI NGAY ➔";
         }
+    }
 
-        async function validateAndStart() {
-            const maThi = document.getElementById('maThi').value.trim();
-            const name = document.getElementById('studentName').value.trim();
-            const dob = document.getElementById('studentDOB').value.trim();
-            
-            if(!name || !maThi || !dob) return alert("Vui lòng nhập đầy đủ thông tin học viên!");
-
-            const btn = document.getElementById('btnStart');
-            btn.disabled = true; btn.innerText = "ĐANG XÁC THỰC...";
-
-            try {
-                const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${maThi}`);
-                const result = await res.json();
-                if(result.isValid) startQuiz();
-                else { alert("Mã thi không chính xác!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
-            } catch(e) { startQuiz(); }
+    function startQuiz() {
+        if(allQuestions.length === 0) {
+            alert("Đang tải dữ liệu, vui lòng đợi trong giây lát...");
+            preloadQuestions();
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStart').innerText = "VÀO THI NGAY ➔";
+            return;
         }
+        
+        selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 30);
+        const stName = document.getElementById('studentName').value.toUpperCase();
+        
+        document.getElementById('display-name').innerText = stName;
+        document.getElementById('job-display-header').innerText = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+        
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('caee-header').style.display = 'flex';
+        document.getElementById('quiz-screen').style.display = 'grid';
+        
+        showQuestion(0);
+        startTimer();
+    }
 
-        function startQuiz() {
-            if(allQuestions.length === 0) return alert("Đang tải dữ liệu, vui lòng đợi vài giây...");
-            selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 30);
-            
-            document.getElementById('display-name').innerText = document.getElementById('studentName').value.toUpperCase();
-            document.getElementById('job-display-header').innerText = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
-            
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('caee-header').style.display = 'flex';
-            document.getElementById('quiz-screen').style.display = 'grid';
-            
-            showQuestion(0);
-            startTimer();
-        }
+    function showQuestion(idx) {
+        currentQuestionIndex = idx;
+        const q = selectedQuestions[idx];
+        const stored = studentAnswers.find(a => a.qIndex === idx);
+        const isPractice = document.getElementById('modeToggle').checked;
+        const labels = ['A', 'B', 'C', 'D'];
 
-        function showQuestion(idx) {
-            currentQuestionIndex = idx;
-            const q = selectedQuestions[idx];
-            const stored = studentAnswers.find(a => a.qIndex === idx);
-            const isPractice = document.getElementById('modeToggle').checked;
-            const labels = ['A', 'B', 'C', 'D'];
+        let html = `<h3>Câu ${idx + 1}: ${q.question}</h3>`;
+        if(q.image) html += `<div class="q-image-box"><img src="${q.image}"></div>`;
 
-            let html = `<h3 style="margin-bottom:15px; color:#333;">Câu ${idx + 1}: ${q.question}</h3>`;
-            if(q.image) html += `<div class="q-image-box"><img src="${q.image}"></div>`;
-
-            q.options.forEach((opt, i) => {
-                let cls = "";
-                const isSelected = stored && opt === stored.selected;
-                if(isPractice && stored) {
-                    if(labels[i] === q.answer) cls = "correct";
-                    else if(isSelected) cls = "wrong";
-                } else if(isSelected) cls = "selected";
-
-                html += `<div class="option-item ${cls}" onclick="selectAns(${idx}, '${opt.replace(/'/g, "\\'")}')">
-                            <b style="margin-right:10px;">${labels[i]}.</b> ${opt}
-                         </div>`;
-            });
-
+        q.options.forEach((opt, i) => {
+            let cls = "";
+            const isSelected = stored && opt === stored.selected;
             if(isPractice && stored) {
-                html += `<div style="background:#fff3cd; padding:15px; border-radius:12px; margin-top:15px; border-left:5px solid #ffc107;">
-                            <b>Giải thích:</b> ${q.explanation}
-                         </div>`;
+                if(labels[i] === q.answer) cls = "correct";
+                else if(isSelected) cls = "wrong";
+            } else if(isSelected) cls = "selected";
+
+            html += `<div class="option-item ${cls}" onclick="selectAns(${idx}, '${opt.replace(/'/g, "\\'")}')"><b>${labels[i]}.</b>&nbsp;${opt}</div>`;
+        });
+
+        if(isPractice && stored) html += `<div style="background:#fff3cd; padding:10px; border-radius:8px; margin-top:10px;"><b>Giải thích:</b> ${q.explanation}</div>`;
+        
+        html += `<div style="display:flex; justify-content:space-between; margin-top:20px;">
+                    <button class="btn-start" style="width:45%; background:var(--btn-blue);" onclick="showQuestion(${idx-1})" ${idx===0?'disabled':''}>Lùi lại</button>
+                    <button class="btn-start" style="width:45%; background:var(--btn-blue);" onclick="showQuestion(${idx+1})" ${idx===29?'disabled':''}>Tiếp theo</button>
+                 </div>`;
+        document.getElementById('quiz-content').innerHTML = html;
+        renderGrid();
+    }
+
+    function selectAns(qIdx, ans) {
+        if(isSubmitted) return;
+        const i = studentAnswers.findIndex(a => a.qIndex === qIdx);
+        if(i > -1) studentAnswers[i].selected = ans;
+        else studentAnswers.push({qIndex: qIdx, selected: ans});
+        showQuestion(qIdx);
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('nav-grid');
+        grid.innerHTML = "";
+        selectedQuestions.forEach((_, i) => {
+            const hasAns = studentAnswers.some(a => a.qIndex === i);
+            const active = i === currentQuestionIndex ? 'border:3px solid var(--btn-orange);' : '';
+            const bg = hasAns ? 'background:var(--caee-blue); color:white;' : 'background:white;';
+            grid.innerHTML += `<div onclick="showQuestion(${i})" style="height:40px; display:flex; justify-content:center; align-items:center; border-radius:5px; cursor:pointer; font-weight:bold; ${bg} ${active}">${i+1}</div>`;
+        });
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            let m = Math.floor(timeLeft/60), s = timeLeft%60;
+            document.getElementById('timer').innerText = `${m}:${s<10?'0':''}${s}`;
+            if(timeLeft <= 0) submitQuiz(true);
+        }, 1000);
+    }
+
+    async function submitQuiz(auto = false) {
+        if(isSubmitted) return;
+        if(!auto && !confirm("Bạn chắc chắn muốn nộp bài?")) return;
+        isSubmitted = true; clearInterval(timerInterval);
+
+        let score = 0;
+        selectedQuestions.forEach((q, i) => {
+            const ans = studentAnswers.find(a => a.qIndex === i);
+            if(ans && ['A','B','C','D'][q.options.indexOf(ans.selected)] === q.answer) score++;
+        });
+
+        const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
+        const studentName = document.getElementById('studentName').value.toUpperCase();
+        const studentDOB = document.getElementById('studentDOB').value;
+        const khoaThi = document.getElementById('khoaThi').value;
+
+        // HIỂN THỊ THÔNG TIN RA MÀN HÌNH KẾT QUẢ
+        document.getElementById('res-name').innerText = studentName;
+        document.getElementById('res-dob').innerText = studentDOB;
+        document.getElementById('res-id').innerText = khoaThi;
+        document.getElementById('res-score').innerText = score;
+        document.getElementById('res-badge').innerText = status;
+        document.getElementById('res-badge').style.backgroundColor = score >= 25 ? "var(--success)" : "var(--danger)";
+        
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('caee-header').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'flex';
+
+        // Gửi dữ liệu về Google Sheets
+        const formData = new URLSearchParams();
+        formData.append('name', studentName);
+        formData.append('birthDate', studentDOB);
+        formData.append('khoaThi', khoaThi);
+        formData.append('jobName', document.getElementById('job-display-header').innerText);
+        formData.append('score', score);
+        formData.append('status', status);
+        formData.append('mode', document.getElementById('modeToggle').checked ? "ONTAP" : "THI");
+        formData.append('cheat', cheatCount);
+
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
+
+        let c = 10;
+        const countInt = setInterval(() => { 
+            c--; 
+            document.getElementById('countdown').innerText = c; 
+            if(c<=0) {
+                clearInterval(countInt);
+                location.reload();
             }
-            
-            html += `<div style="display:flex; justify-content:space-between; margin-top:25px; gap:10px;">
-                        <button class="btn-start" style="width:50%; background:#6c757d; margin:0;" onclick="showQuestion(${idx-1})" ${idx===0?'disabled':''}>LÙI LẠI</button>
-                        <button class="btn-start" style="width:50%; background:var(--caee-blue); margin:0;" onclick="showQuestion(${idx+1})" ${idx===29?'disabled':''}>TIẾP THEO</button>
-                     </div>`;
-            document.getElementById('quiz-content').innerHTML = html;
-            renderGrid();
-        }
-
-        function selectAns(qIdx, ans) {
-            if(isSubmitted) return;
-            const i = studentAnswers.findIndex(a => a.qIndex === qIdx);
-            if(i > -1) studentAnswers[i].selected = ans;
-            else studentAnswers.push({qIndex: qIdx, selected: ans});
-            showQuestion(qIdx);
-        }
-
-        function renderGrid() {
-            const grid = document.getElementById('nav-grid');
-            if(!grid) return;
-            grid.innerHTML = "";
-            selectedQuestions.forEach((_, i) => {
-                const hasAns = studentAnswers.some(a => a.qIndex === i);
-                const active = i === currentQuestionIndex ? 'border:3px solid #ff6600; transform: scale(1.1);' : '';
-                const bg = hasAns ? 'background:var(--caee-blue); color:white;' : 'background:white; color:#333;';
-                grid.innerHTML += `<div onclick="showQuestion(${i})" style="height:42px; display:flex; justify-content:center; align-items:center; border-radius:8px; cursor:pointer; font-weight:bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); ${bg} ${active}">${i+1}</div>`;
-            });
-        }
-
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                let m = Math.floor(timeLeft/60), s = timeLeft%60;
-                document.getElementById('timer').innerText = `${m}:${s<10?'0':''}${s}`;
-                if(timeLeft <= 0) submitQuiz(true);
-            }, 1000);
-        }
-
-        async function submitQuiz(auto = false) {
-            if(isSubmitted) return;
-            if(!auto && !confirm("Bạn có chắc chắn muốn nộp bài thi ngay?")) return;
-            isSubmitted = true; clearInterval(timerInterval);
-
-            let score = 0;
-            selectedQuestions.forEach((q, i) => {
-                const ans = studentAnswers.find(a => a.qIndex === i);
-                if(ans && ['A','B','C','D'][q.options.indexOf(ans.selected)] === q.answer) score++;
-            });
-
-            const status = score >= 25 ? "ĐẠT YÊU CẦU" : "KHÔNG ĐẠT";
-            const sName = document.getElementById('studentName').value.toUpperCase();
-            const sDOB = document.getElementById('studentDOB').value;
-            const kThi = document.getElementById('khoaThi').value;
-
-            document.getElementById('res-name').innerText = sName;
-            document.getElementById('res-dob').innerText = sDOB;
-            document.getElementById('res-id').innerText = kThi;
-            document.getElementById('res-score').innerText = score;
-            document.getElementById('res-badge').innerText = status;
-            document.getElementById('res-badge').style.background = score >= 25 ? "#28a745" : "#dc3545";
-            
-            document.getElementById('quiz-screen').style.display = 'none';
-            document.getElementById('caee-header').style.display = 'none';
-            document.getElementById('result-screen').style.display = 'flex';
-
-            // Gửi kết quả về Google Sheets
-            const formData = new URLSearchParams();
-            formData.append('name', sName);
-            formData.append('birthDate', sDOB);
-            formData.append('khoaThi', kThi);
-            formData.append('jobName', document.getElementById('job-display-header').innerText);
-            formData.append('score', score);
-            formData.append('status', status);
-            formData.append('mode', document.getElementById('modeToggle').checked ? "ON_TAP" : "SAT_HACH");
-            formData.append('cheat', cheatCount);
-
-            fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
-
-            let c = 10;
-            const countInt = setInterval(() => { c--; document.getElementById('countdown').innerText = c; if(c<=0) { clearInterval(countInt); location.reload(); } }, 1000);
-        }
-
-        window.onblur = () => { 
-            if(!isSubmitted && selectedQuestions.length > 0) {
-                cheatCount++;
-                document.getElementById('warning-overlay').style.display = 'flex';
-                if(cheatCount >= 3) submitQuiz(true);
-            }
-        };
-        window.onfocus = () => { document.getElementById('warning-overlay').style.display = 'none'; };
-    </script>
+        }, 1000);
+    }
+</script>
 </body>
 </html>
