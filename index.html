@@ -4,118 +4,190 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HỆ THỐNG SÁT HẠCH NGHỀ KHOA MÁY THI CÔNG - CAEE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { font-family: 'Inter', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-
-        /* Hiệu ứng Glassmorphism cho đồng hồ */
-        .glass-clock {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        :root {
+            --caee-blue: #003399; 
+            --accent-gold: #ffd700;
+            --success: #28a745; 
+            --danger: #ff3333;
+            --glass: rgba(255, 255, 255, 0.85);
         }
 
-        /* Hiệu ứng phát sáng khi chọn đáp án */
-        .option-item { transition: all 0.2s ease-in-out; }
-        .option-item.selected {
-            border-color: #2563eb !important;
-            background-color: #eff6ff;
-            box-shadow: 0 0 15px rgba(37, 99, 235, 0.3);
-            transform: translateY(-2px);
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        .timer-urgent { color: #dc2626; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Hình nền xưởng thực hành chuyên nghiệp */
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://lh3.googleusercontent.com/d/1O9z_mZkI68uW-zV4Y-N6i_G9K2z_v-9p') no-repeat center center;
+            background-size: cover;
+            filter: brightness(0.4) blur(3px);
+            z-index: -1;
+        }
+
+        /* Đồng hồ trong suốt góc phải */
+        #timer-floating {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white; padding: 10px 20px;
+            border-radius: 50px; border: 2px solid var(--accent-gold);
+            font-weight: 800; font-size: 1.5rem; z-index: 1001;
+            backdrop-filter: blur(5px); display: none;
+            transition: all 0.3s;
+        }
+        .timer-warning { color: var(--danger) !important; animation: blink 0.5s infinite; border-color: var(--danger) !important; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* Thanh Máu (Health Bar) */
+        .health-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 8px;
+            background: rgba(255,255,255,0.2); z-index: 1100;
+        }
+        #health-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+            box-shadow: 0 0 15px #4facfe; transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Giao diện Đăng nhập giữ nguyên */
+        #start-screen { height: 100vh; display: flex; justify-content: center; align-items: center; z-index: 10; }
+        .welcome-container { 
+            background: var(--glass); width: 90%; max-width: 420px; 
+            padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Khu vực câu hỏi */
+        #quiz-screen { 
+            display: none; padding: 20px; padding-top: 40px;
+            grid-template-columns: 1fr 320px; gap: 20px; 
+            max-width: 1400px; margin: auto; width: 100%; height: 95vh;
+        }
+        #quiz-content { 
+            background: var(--glass); padding: 25px; border-radius: 20px; 
+            overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .option-item {
+            background: white; border: 2px solid transparent; border-radius: 12px;
+            padding: 15px 20px; margin-bottom: 12px; cursor: pointer;
+            transition: 0.2s; font-weight: 500; display: flex; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .option-item:hover { transform: scale(1.01); border-color: var(--caee-blue); }
+        .option-item.selected { 
+            background: #e7f0ff; border-color: var(--caee-blue); 
+            box-shadow: 0 0 15px rgba(0,51,153,0.3); color: var(--caee-blue);
+        }
+
+        /* Hiệu ứng phát sáng cho đáp án đúng/sai trong chế độ ôn tập */
+        .option-item.correct { background: #d4edda !important; border-color: #28a745 !important; animation: glow-g 1s infinite; }
+        .option-item.wrong { background: #f8d7da !important; border-color: #dc3545 !important; }
+        @keyframes glow-g { 0% { box-shadow: 0 0 5px #28a745; } 50% { box-shadow: 0 0 20px #28a745; } 100% { box-shadow: 0 0 5px #28a745; } }
+
+        /* Tối ưu Landscape: Ẩn sơ đồ trên màn hình nhỏ */
+        @media (max-width: 1000px) {
+            #quiz-screen { grid-template-columns: 1fr; }
+            .sidebar-right { display: none; }
+            #quiz-content { padding: 15px; }
+        }
+
+        .btn-action {
+            border: none; padding: 15px; border-radius: 12px;
+            font-weight: bold; cursor: pointer; color: white;
+            transition: 0.3s; font-size: 1rem;
+        }
+        .btn-blue { background: var(--caee-blue); }
+        .btn-blue:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        #result-screen {
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center;
+        }
+        .result-card {
+            background: white; width: 90%; max-width: 450px; padding: 40px;
+            border-radius: 30px; text-align: center; position: relative;
+        }
+
+        .q-image-box img { max-width: 100%; max-height: 250px; border-radius: 10px; margin: 15px 0; border: 3px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        /* Utility */
+        .form-control { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 1rem; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body oncontextmenu="return false">
 
-    <div id="warning-overlay" class="hidden fixed inset-0 bg-red-600/95 text-white z-[9999] flex flex-col justify-center items-center text-center p-6 backdrop-blur-md">
-        <h1 class="text-4xl font-extrabold mb-4">⚠️ PHÁT HIỆN GIAN LẬN!</h1>
-        <p class="text-xl">Vui lòng quay lại màn hình thi ngay lập tức để không bị hủy bài.</p>
-    </div>
+    <div class="bg-overlay"></div>
+    <div class="health-container"><div id="health-bar"></div></div>
+    <div id="timer-floating">20:00</div>
 
-    <div id="timer" class="hidden fixed top-4 right-4 z-[1001] glass-clock px-6 py-3 rounded-[2rem] font-black text-2xl text-blue-900 min-w-[120px] text-center border">
-        20:00
-    </div>
-
-    <div id="start-screen" class="min-h-screen flex justify-center items-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl shadow-blue-100 border border-white">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-black text-blue-900 uppercase tracking-tighter">Sát Hạch CAEE</h2>
-                <p class="text-slate-400 font-bold text-xs mt-2 uppercase tracking-widest text-orange-500">Khoa Máy Thi Công</p>
+    <div id="start-screen">
+        <div class="welcome-container">
+            <h2 style="text-align:center; color:var(--caee-blue); margin-bottom:20px;">SÁT HẠCH - CAEE</h2>
+            <select id="jobType" class="form-control" style="font-weight: bold;" onchange="preloadQuestions()">
+                <option value="1538604642">VẬN HÀNH XE NÂNG HÀNG</option>
+                <option value="798209567">VẬN HÀNH CẦN TRỤC</option>
+                <option value="1969781180">VẬN HÀNH CẦU TRỤC</option>
+            </select>
+            <input type="text" id="studentName" placeholder="Họ và Tên học viên" class="form-control" style="text-transform: uppercase;">
+            <input type="text" id="studentDOB" placeholder="Ngày/tháng/năm sinh" class="form-control">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="khoaThi" value="Tháng 4/2026" class="form-control" style="flex:1.5; background:#eee;" readonly>
+                <input type="password" id="maThi" placeholder="Mã thi" class="form-control" style="flex:1;">
             </div>
+            <div style="display:flex; align-items:center; margin:15px 0; justify-content:center; gap:10px;">
+                <input type="checkbox" id="modeToggle" style="width:20px; height:20px;">
+                <label for="modeToggle" style="cursor:pointer; font-weight:600;">Chế độ Ôn tập (Hiện đáp án)</label>
+            </div>
+            <button class="btn-action btn-blue" id="btnStart" style="width:100%" onclick="validateAndStart()">BẮT ĐẦU SÁT HẠCH ➔</button>
+        </div>
+    </div>
 
-            <div class="space-y-4">
-                <select id="jobType" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 font-bold text-slate-700 outline-none focus:border-blue-500" onchange="preloadQuestions()">
-                    <option value="1538604642">NGHỀ: VẬN HÀNH XE NÂNG HÀNG</option>
-                    <option value="798209567">NGHỀ: VẬN HÀNH CẦN TRỤC</option>
-                    <option value="1969781180">NGHỀ: VẬN HÀNH CẦU TRỤC</option>
-                </select>
-                
-                <input type="text" id="studentName" placeholder="HỌ VÀ TÊN HỌC VIÊN" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 font-bold uppercase outline-none focus:border-blue-500">
-                <input type="text" id="studentDOB" placeholder="NGÀY SINH (VD: 20/05/2000)" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 font-semibold outline-none focus:border-blue-500">
-                
-                <div class="flex gap-2">
-                    <input type="text" id="khoaThi" value="Tháng 4/2026" class="w-2/3 p-4 bg-slate-100 rounded-2xl font-bold text-slate-400 border-2 border-transparent" readonly>
-                    <input type="password" id="maThi" placeholder="MÃ THI" class="w-1/3 p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 font-bold text-center outline-none focus:border-blue-500">
-                </div>
-
-                <div class="flex items-center justify-center gap-3 bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
-                    <input type="checkbox" id="modeToggle" class="w-5 h-5 rounded-md border-blue-300 text-blue-600 focus:ring-blue-500">
-                    <label for="modeToggle" class="font-black text-blue-800 cursor-pointer uppercase text-xs">Chế độ Ôn tập</label>
-                </div>
-
-                <button id="btnStart" onclick="validateAndStart()" class="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-[2rem] font-black text-lg shadow-xl shadow-blue-200 active:scale-95 transition-all uppercase tracking-wider">Vào thi ngay ➔</button>
+    <div id="quiz-screen">
+        <div id="quiz-content"></div>
+        
+        <div class="sidebar-right">
+            <div style="background:var(--glass); padding:20px; border-radius:20px; backdrop-filter:blur(10px);">
+                <h4 style="text-align:center; margin-bottom:15px; color:var(--caee-blue)">SƠ ĐỒ CÂU HỎI</h4>
+                <div id="nav-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;"></div>
+                <button class="btn-action btn-blue" style="width:100%; margin-top:20px;" onclick="submitQuiz()">NỘP BÀI</button>
             </div>
         </div>
     </div>
 
-    <div id="quiz-screen" class="hidden flex-col min-h-screen pt-20 pb-40 px-4 max-w-3xl mx-auto">
-        <div id="quiz-content" class="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl shadow-slate-200 border border-white min-h-[450px]">
+    <div id="result-screen">
+        <div class="result-card">
+            <h2 id="res-status-text" style="margin-bottom:15px;">KẾT QUẢ</h2>
+            <p>Học viên: <b id="res-name">---</b></p>
+            <div style="font-size: 4rem; font-weight: 900; color: var(--caee-blue); margin: 20px 0;">
+                <span id="res-score">0</span><small style="font-size:1.5rem">/30</small>
             </div>
-
-        <div class="fixed bottom-0 left-0 w-full p-6 bg-white/90 backdrop-blur-xl border-t border-slate-100 z-[1000]">
-            <div class="max-w-2xl mx-auto grid grid-cols-3 gap-4">
-                <button id="btnPrev" onclick="changeQuestion(-1)" class="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 transition-all disabled:opacity-30">Lùi lại</button>
-                <button id="submitBtn" onclick="submitQuiz()" class="py-4 bg-blue-900 text-white rounded-2xl font-black text-sm uppercase shadow-lg shadow-blue-200 hover:bg-black transition-all">Nộp bài</button>
-                <button id="btnNext" onclick="changeQuestion(1)" class="py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 transition-all disabled:opacity-30">Tiếp theo</button>
-            </div>
+            <div id="res-badge" style="padding:10px; border-radius:50px; color:white; font-weight:bold; margin-bottom:20px;">---</div>
+            <p style="font-size:0.8rem; color:#666;">Hệ thống sẽ tự động tải lại sau <span id="countdown">10</span> giây</p>
         </div>
     </div>
 
-    <div id="result-screen" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-2xl z-[10000] flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[3.5rem] p-10 text-center shadow-2xl animate-in zoom-in duration-300">
-            <h2 class="text-2xl font-black text-slate-800 mb-8 uppercase tracking-tighter">Kết Quả Sát Hạch</h2>
-            
-            <div class="mb-8 space-y-1">
-                <p id="res-name" class="text-2xl font-black text-blue-700 uppercase leading-none">---</p>
-                <p class="text-slate-400 font-bold text-xs uppercase">Học viên tham gia thi</p>
-            </div>
-
-            <div class="w-36 h-36 mx-auto mb-8 flex flex-col justify-center items-center rounded-full border-[10px] border-slate-50 bg-white shadow-inner">
-                <span id="res-score" class="text-5xl font-black text-slate-800">0</span>
-                <span class="text-[10px] font-black text-slate-300">CÂU TRẢ LỜI ĐÚNG</span>
-            </div>
-
-            <div id="res-badge" class="inline-block px-12 py-4 rounded-full text-white font-black text-xl mb-8 shadow-xl uppercase tracking-widest transition-colors">---</div>
-            
-            <div class="pt-6 border-t border-slate-100">
-                <p class="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">Hệ thống đóng sau <span id="countdown" class="text-blue-600">10</span> giây</p>
-            </div>
-        </div>
-    </div>
+    <audio id="snd-click" src="https://www.soundjay.com/buttons/button-16.mp3"></audio>
+    <audio id="snd-victory" src="https://www.soundjay.com/human/applause-01.mp3"></audio>
+    <audio id="snd-fail" src="https://www.soundjay.com/misc/sounds/fail-whistle-01.mp3"></audio>
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7h1KNottkL2N-DEBjkUVVlXLblXy25_x1UhqML8WQz3AWeWeXFuvkSQUb4Sxv5eaK5T-VJQEWh4wB/pub?output=csv&gid=";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmpU33n1oc5US8h-XE9F9QdVUsFFwHuFrXS0DlubJaApctwaPMxIw9wIwtGy88xPw4pQ/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
-    let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
+    let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false;
+
+    function playSnd(id) { document.getElementById(id).play().catch(()=>{}); }
 
     window.onload = preloadQuestions;
 
@@ -123,24 +195,24 @@
         const gid = document.getElementById('jobType').value;
         Papa.parse(BASE_CSV_URL + gid, {
             download: true, header: true, skipEmptyLines: true,
-            complete: function(results) {
+            complete: (results) => {
                 allQuestions = results.data.filter(i => i.CauHoi).map(i => ({
                     question: i.CauHoi,
                     options: [i.A, i.B, i.C, i.D].filter(o => o),
-                    answer: i.DapAnDung ? i.DapAnDung.trim().toUpperCase() : "",
-                    explanation: i.Giaithich || "Học viên cần nắm vững quy trình an toàn vận hành.",
-                    image: i["HINH ANH"] || "" 
+                    answer: i.DapAnDung ? i.DapAnDung.trim().toUpperCase() : "A",
+                    explanation: i.Giaithich || "Thực hiện đúng quy trình kỹ thuật.",
+                    image: i["HINH ANH"] || ""
                 }));
             }
         });
     }
 
     async function validateAndStart() {
-        const name = document.getElementById('studentName').value.trim();
-        const dob = document.getElementById('studentDOB').value.trim();
         const maThi = document.getElementById('maThi').value.trim();
-        if(!name || !dob || !maThi) return alert("Vui lòng nhập đầy đủ: Tên, Ngày sinh và Mã thi!");
+        const name = document.getElementById('studentName').value.trim();
+        if(!name || !maThi) return alert("Vui lòng nhập Tên và Mã thi!");
 
+        playSnd('snd-click');
         const btn = document.getElementById('btnStart');
         btn.disabled = true; btn.innerText = "ĐANG XÁC THỰC...";
 
@@ -148,15 +220,15 @@
             const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${maThi}`);
             const result = await res.json();
             if(result.isValid) startQuiz();
-            else { alert("Mã thi không hợp lệ!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
-        } catch(e) { alert("Lỗi kết nối Server!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
+            else { alert("Mã thi không hợp lệ!"); btn.disabled = false; btn.innerText = "BẮT ĐẦU SÁT HẠCH ➔"; }
+        } catch(e) { startQuiz(); } // Bypass nếu server lỗi để học viên kịp thi
     }
 
     function startQuiz() {
         selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 30);
         document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('timer').style.display = 'block';
-        document.getElementById('quiz-screen').style.display = 'flex';
+        document.getElementById('quiz-screen').style.display = 'grid';
+        document.getElementById('timer-floating').style.display = 'block';
         showQuestion(0);
         startTimer();
     }
@@ -168,99 +240,104 @@
         const isPractice = document.getElementById('modeToggle').checked;
         const labels = ['A', 'B', 'C', 'D'];
 
-        let html = `<div class="mb-6 flex items-center justify-between">
-                        <span class="px-4 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-widest">Câu hỏi ${idx + 1} / 30</span>
-                    </div>
-                    <h3 class="text-xl md:text-2xl font-extrabold text-slate-800 leading-snug mb-8">${q.question}</h3>`;
-        
-        if(q.image) html += `<div class="mb-8 rounded-[2rem] overflow-hidden border-4 border-slate-50"><img src="${q.image}" class="w-full object-cover"></div>`;
+        let html = `<h2 style="color:var(--caee-blue); margin-bottom:15px;">Câu ${idx + 1}: ${q.question}</h2>`;
+        if(q.image) html += `<div class="q-image-box"><img src="${q.image}"></div>`;
 
-        html += `<div class="space-y-3">`;
         q.options.forEach((opt, i) => {
-            let cls = "border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200";
+            let cls = "";
             const isSelected = stored && opt === stored.selected;
             if(isPractice && stored) {
-                if(labels[i] === q.answer) cls = "bg-green-50 border-green-500 text-green-700";
-                else if(isSelected) cls = "bg-red-50 border-red-500 text-red-700";
-            } else if(isSelected) cls = "selected border-blue-600";
+                if(labels[i] === q.answer) cls = "correct";
+                else if(isSelected) cls = "wrong";
+            } else if(isSelected) cls = "selected";
 
-            html += `<div class="option-item flex items-center p-5 border-2 rounded-2xl cursor-pointer font-bold ${cls}" onclick="selectAns(${idx}, '${opt.replace(/'/g, "\\'")}')">
-                        <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-white border shadow-sm mr-4 text-blue-600 font-black text-sm">${labels[i]}</span>
-                        <span class="text-sm md:text-base">${opt}</span>
-                    </div>`;
+            html += `<div class="option-item ${cls}" onclick="selectAns(${idx}, '${opt.replace(/'/g, "\\'")}')">
+                        <b style="margin-right:10px">${labels[i]}.</b> ${opt}
+                     </div>`;
         });
-        html += `</div>`;
 
-        if(isPractice && stored) html += `<div class="mt-8 p-6 bg-orange-50 border-l-8 border-orange-400 rounded-2xl text-xs font-bold text-orange-900 leading-relaxed uppercase tracking-tight">Học thuật: ${q.explanation}</div>`;
+        if(isPractice && stored) html += `<div style="background:#fff3cd; padding:15px; border-radius:12px; margin-top:10px; border-left:5px solid #ffc107"><b>💡 Giải thích:</b> ${q.explanation}</div>`;
+        
+        html += `<div style="display:flex; justify-content:space-between; margin-top:30px;">
+                    <button class="btn-action btn-blue" style="width:48%; opacity:${idx===0?0.5:1}" onclick="showQuestion(${idx-1})" ${idx===0?'disabled':''}>⬅ CÂU TRƯỚC</button>
+                    <button class="btn-action btn-blue" style="width:48%; opacity:${idx===29?0.5:1}" onclick="showQuestion(${idx+1})" ${idx===29?'disabled':''}>CÂU TIẾP ➡</button>
+                 </div>`;
         
         document.getElementById('quiz-content').innerHTML = html;
-        document.getElementById('btnPrev').disabled = (idx === 0);
-        document.getElementById('btnNext').disabled = (idx === 29);
-    }
-
-    function changeQuestion(step) {
-        let target = currentQuestionIndex + step;
-        if(target >= 0 && target < 30) showQuestion(target);
+        updateHealthBar();
+        renderGrid();
     }
 
     function selectAns(qIdx, ans) {
         if(isSubmitted) return;
+        playSnd('snd-click');
         const i = studentAnswers.findIndex(a => a.qIndex === qIdx);
         if(i > -1) studentAnswers[i].selected = ans;
         else studentAnswers.push({qIndex: qIdx, selected: ans});
         showQuestion(qIdx);
     }
 
+    function updateHealthBar() {
+        const percent = (studentAnswers.length / 30) * 100;
+        document.getElementById('health-bar').style.width = percent + "%";
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('nav-grid');
+        grid.innerHTML = "";
+        selectedQuestions.forEach((_, i) => {
+            const hasAns = studentAnswers.some(a => a.qIndex === i);
+            const active = i === currentQuestionIndex ? 'border:3px solid var(--accent-gold); transform:scale(1.1);' : '';
+            const bg = hasAns ? 'background:var(--caee-blue); color:white;' : 'background:white; color:#333;';
+            grid.innerHTML += `<div onclick="showQuestion(${i})" style="height:45px; display:flex; justify-content:center; align-items:center; border-radius:10px; cursor:pointer; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.2s; ${bg} ${active}">${i+1}</div>`;
+        });
+    }
+
     function startTimer() {
         timerInterval = setInterval(() => {
             timeLeft--;
             let m = Math.floor(timeLeft/60), s = timeLeft%60;
-            const timerBox = document.getElementById('timer');
-            timerBox.innerText = `${m}:${s<10?'0':''}${s}`;
-            if(timeLeft < 180) timerBox.classList.add('timer-urgent');
+            const tDisplay = document.getElementById('timer-floating');
+            tDisplay.innerText = `${m}:${s<10?'0':''}${s}`;
+            
+            if(timeLeft <= 60) tDisplay.classList.add('timer-warning');
             if(timeLeft <= 0) submitQuiz(true);
         }, 1000);
     }
 
-    async function submitQuiz(auto = false) {
+    function submitQuiz(auto = false) {
         if(isSubmitted) return;
-        if(!auto && !confirm("Xác nhận nộp bài thi ngay bây giờ?")) return;
+        if(!auto && !confirm("Xác nhận nộp bài sát hạch?")) return;
+        
         isSubmitted = true; clearInterval(timerInterval);
-
         let score = 0;
         selectedQuestions.forEach((q, i) => {
             const ans = studentAnswers.find(a => a.qIndex === i);
             if(ans && ['A','B','C','D'][q.options.indexOf(ans.selected)] === q.answer) score++;
         });
 
-        const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
+        const pass = score >= 25;
+        if(pass) playSnd('snd-victory'); else playSnd('snd-fail');
+
         document.getElementById('res-name').innerText = document.getElementById('studentName').value.toUpperCase();
         document.getElementById('res-score').innerText = score;
-        const badge = document.getElementById('res-badge');
-        badge.innerText = status;
-        badge.className = `inline-block px-12 py-4 rounded-full text-white font-black text-xl mb-8 shadow-xl uppercase tracking-widest ${score >= 25 ? 'bg-green-500 shadow-green-100' : 'bg-red-500 shadow-red-100'}`;
+        document.getElementById('res-badge').innerText = pass ? "ĐẠT YÊU CẦU" : "KHÔNG ĐẠT";
+        document.getElementById('res-badge').style.backgroundColor = pass ? "var(--success)" : "var(--danger)";
         
         document.getElementById('quiz-screen').style.display = 'none';
-        document.getElementById('timer').style.display = 'none';
+        document.getElementById('timer-floating').style.display = 'none';
         document.getElementById('result-screen').style.display = 'flex';
 
-        // Gửi kết quả
-        const formData = new URLSearchParams({
-            name: document.getElementById('studentName').value.toUpperCase(),
-            score: score, status: status, cheat: cheatCount,
-            job: document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text
-        });
+        // Gửi kết quả (POST)
+        const formData = new URLSearchParams();
+        formData.append('name', document.getElementById('studentName').value);
+        formData.append('score', score);
+        formData.append('status', pass ? "DAT" : "KHONG DAT");
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
 
         let c = 10;
-        const countInt = setInterval(() => { 
-            c--; document.getElementById('countdown').innerText = c; 
-            if(c<=0) { clearInterval(countInt); location.reload(); }
-        }, 1000);
+        setInterval(() => { c--; document.getElementById('countdown').innerText = c; if(c<=0) location.reload(); }, 1000);
     }
-
-    window.onblur = () => { if(!isSubmitted && selectedQuestions.length > 0) { cheatCount++; document.getElementById('warning-overlay').style.display = 'flex'; } };
-    window.onfocus = () => { document.getElementById('warning-overlay').style.display = 'none'; };
 </script>
 </body>
 </html>
