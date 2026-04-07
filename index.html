@@ -2,178 +2,115 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HỆ THỐNG SÁT HẠCH NGHỀ KHOA MÁY THI CÔNG - CAEE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         :root {
-            --caee-blue: #003399; 
-            --header-gradient: linear-gradient(90deg, #0040cc 0%, #007bff 100%);
-            --btn-success: linear-gradient(135deg, #28a745 0%, #34ce57 100%);
-            --btn-blue: linear-gradient(135deg, #3366ff 0%, #0052cc 100%);
-            --danger: #dc3545;
-            --glass-white: rgba(255, 255, 255, 0.96);
+            --caee-blue: #003399; --header-blue: #0040cc;
+            --btn-orange: #ff6600; --btn-blue: #3366ff;
+            --success: #28a745; --danger: #dc3545;
+            --light-bg: #f0f2f5;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            min-height: 100vh;
-            background: #000;
-            overflow-x: hidden;
-        }
-
-        /* ẢNH NỀN SIÊU SÁNG & SẮC NÉT (OPTIMIZED FOR MOBILE & PC) */
-        .bg-overlay {
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%;
-            background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.05)), 
-                        url('https://i.postimg.cc/m2nGkT9F/anh_xưởng_mtc.png') no-repeat center center;
-            background-size: cover;
-            /* Bộ lọc tăng cường độ sáng và độ nét cực đại */
-            filter: brightness(1.25) contrast(1.2) saturate(1.3);
-            z-index: -1;
-            image-rendering: -webkit-optimize-contrast;
-            transform: translateZ(0);
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body { background-color: var(--light-bg); font-family: 'Segoe UI', Arial, sans-serif; padding-top: 60px; overflow-x: hidden; }
 
         #warning-overlay {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(220, 53, 69, 0.96); color: white; z-index: 9999;
-            justify-content: center; align-items: center; text-align: center; font-size: 1.5rem;
-            backdrop-filter: blur(15px); padding: 20px; font-weight: bold;
+            background: rgba(220, 53, 69, 0.9); color: white; z-index: 9999;
+            justify-content: center; align-items: center; text-align: center; font-size: 2rem;
         }
 
         .caee-header {
-            background: var(--header-gradient); color: white; padding: 10px 15px;
+            background: var(--header-blue); color: white; padding: 10px 20px;
             display: none; justify-content: space-between; align-items: center;
-            position: fixed; top: 0; width: 100%; z-index: 1000; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+        .timer-box { background: #ff3333; padding: 5px 15px; border-radius: 4px; font-weight: bold; min-width: 80px; text-align: center; }
 
-        .timer-box { 
-            background: #ff0000; padding: 6px 12px; border-radius: 50px; 
-            font-weight: bold; min-width: 85px; text-align: center; 
-            border: 2px solid white; font-size: 1.1rem; box-shadow: 0 0 15px rgba(255,0,0,0.4);
-        }
-
-        /* FORM ĐĂNG NHẬP */
-        #start-screen { min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; }
-        
-        .welcome-container { 
-            background: var(--glass-white); 
-            width: 100%; max-width: 420px; 
-            border-radius: 25px; padding: 35px 25px; 
-            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.8);
-        }
-
-        .form-control { 
-            width: 100%; padding: 14px; margin: 10px 0; 
-            border: 1px solid #c8ced4; border-radius: 12px; 
-            font-size: 16px; transition: 0.3s;
-        }
-        .form-control:focus { border-color: var(--caee-blue); outline: none; box-shadow: 0 0 10px rgba(0,51,153,0.1); }
+        #start-screen { min-height: 80vh; display: flex; justify-content: center; align-items: center; }
+        .welcome-container { background: white; width: 95%; max-width: 450px; border-radius: 15px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .form-control { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
         
         .btn-start { 
-            background: var(--btn-success); color: white; border: none; width: 100%; padding: 16px; 
-            border-radius: 15px; font-weight: bold; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4); font-size: 1.2rem;
-            text-transform: uppercase; margin-top: 15px;
+            background: var(--success); color: white; border: none; width: 100%; padding: 15px; 
+            border-radius: 12px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2); font-size: 1.1rem;
         }
-        .btn-start:active { transform: scale(0.98); }
+        .btn-start:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3); opacity: 0.9; }
+        .btn-start:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* MÀN HÌNH CÂU HỎI */
-        #quiz-screen { 
-            padding: 15px; padding-top: 95px; display: none; 
-            grid-template-columns: 1fr 340px; gap: 20px; max-width: 1300px; margin: auto; 
-        }
+        #quiz-screen { padding: 20px; display: none; grid-template-columns: 1fr 320px; gap: 20px; max-width: 1300px; margin: auto; }
+        #quiz-content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 400px; }
         
-        #quiz-content { 
-            background: var(--glass-white); padding: 25px; border-radius: 20px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.25); min-height: 500px;
-            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.6);
-        }
-
         .option-item {
-            border: 2px solid #e2e8f0; border-radius: 15px; padding: 16px; margin-bottom: 12px;
-            background: white; font-size: 1rem; transition: 0.2s; cursor: pointer;
-            display: flex; align-items: center;
+            border: 2px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 12px;
+            cursor: pointer; transition: 0.2s; font-weight: 500; display: flex; align-items: center;
         }
-        .option-item.selected { background: #eef6ff; border-color: #007bff; color: var(--caee-blue); font-weight: 600; box-shadow: 0 4px 12px rgba(0,123,255,0.1); }
-        
+        .option-item:hover:not(.disabled) { border-color: var(--btn-blue); background: #f0f7ff; }
+        .option-item.selected { background: #e7f0ff; border-color: var(--btn-blue); color: var(--caee-blue); box-shadow: inset 0 0 0 1px var(--btn-blue); }
         .option-item.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; }
         .option-item.wrong { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; }
 
-        .q-image-box img { max-width: 100%; border-radius: 15px; margin: 15px 0; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-
-        /* SIDEBAR SƠ ĐỒ CÂU HỎI */
-        .sidebar-right div {
-            background: var(--glass-white); padding: 25px; border-radius: 20px;
-            backdrop-filter: blur(20px); box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-            border: 1px solid rgba(255,255,255,0.6);
-        }
-
-        /* KẾT QUẢ */
         #result-screen {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; padding: 20px;
-            backdrop-filter: blur(15px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 10000; justify-content: center; align-items: center; padding: 20px;
         }
         .result-card {
-            background: white; width: 100%; max-width: 450px; border-radius: 30px;
-            padding: 40px 20px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            background: white; width: 100%; max-width: 500px; border-radius: 24px;
+            padding: 40px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.5s ease-out;
         }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .result-header { font-size: 1.5rem; font-weight: bold; color: var(--caee-blue); margin-bottom: 20px; }
+        .score-circle {
+            width: 120px; height: 120px; border-radius: 50%; border: 8px solid #eee;
+            margin: 0 auto 20px; display: flex; flex-direction: column; justify-content: center;
+            font-size: 2rem; font-weight: 800; color: var(--header-blue);
+        }
+        .status-badge { display: inline-block; padding: 8px 25px; border-radius: 50px; color: white; font-weight: bold; margin-bottom: 20px; }
+        .notice-text { background: #fff3cd; color: #856404; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; line-height: 1.4; }
+        .q-image-box img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
 
-        /* RESPONSIVE */
-        @media (max-width: 900px) {
-            #quiz-screen { grid-template-columns: 1fr; padding-top: 100px; }
-            .sidebar-right { display: none; }
-            .caee-header { padding: 5px 10px; }
-            .caee-header div div { font-size: 11px !important; }
-            h3 { font-size: 1.1rem; }
-        }
+        @media (max-width: 900px) { #quiz-screen { grid-template-columns: 1fr; padding-top: 80px; } }
     </style>
 </head>
 <body oncontextmenu="return false">
 
-    <div class="bg-overlay"></div>
-
-    <div id="warning-overlay">⚠️ PHÁT HIỆN GIAN LẬN!<br>Hệ thống sẽ nộp bài nếu bạn rời trang lần nữa.</div>
+    <div id="warning-overlay">⚠️ PHÁT HIỆN GIAN LẬN! <br> Vui lòng quay lại màn hình thi.</div>
 
     <div class="caee-header" id="caee-header">
         <div style="flex-grow: 1; text-align: center;">
-            <div style="font-weight: bold; font-size: 13px; text-shadow: 1px 1px 2px rgba(0,0,0,0.4);">TRƯỜNG CAO ĐẲNG CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
-            <div id="job-display-header" style="font-weight: bold; font-size: 15px; color: #ffd700;">ĐANG TẢI...</div>
-            <div style="font-size: 13px;">HỌC VIÊN: <span id="display-name" style="font-weight: bold; color: #fff;">---</span></div>
+            <div style="font-weight: bold; font-size: 14px;">TRƯỜNG CAO ĐẲNG CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
+            <div id="job-display-header" style="font-weight: bold; font-size: 14px; color: #ffd700;">ĐANG TẢI...</div>
+            <div style="font-size: 13px;">HỌC VIÊN: <span id="display-name" style="font-weight: bold;">---</span></div>
         </div>
         <div id="timer" class="timer-box">20:00</div>
     </div>
 
     <div id="start-screen">
         <div class="welcome-container">
-            <h2 style="text-align:center; color:var(--caee-blue); margin-bottom: 25px; font-weight: 800; font-size: 1.7rem;">HỆ THỐNG SÁT HẠCH</h2>
-            
-            <select id="jobType" class="form-control" style="font-weight: bold; color: #333;" onchange="preloadQuestions()">
-                <option value="1538604642">VẬN HÀNH XE NÂNG HÀNG</option>
-                <option value="798209567">VẬN HÀNH CẦN TRỤC</option>
-                <option value="1969781180">VẬN HÀNH CẦU TRỤC</option>
+            <h2 style="text-align:center; color:var(--caee-blue); margin-bottom: 20px;">HỆ THỐNG SÁT HẠCH - CAEE</h2>
+            <select id="jobType" class="form-control" style="font-weight: bold;" onchange="preloadQuestions()">
+                <option value="1538604642">NGHỀ: VẬN HÀNH XE NÂNG HÀNG</option>
+                <option value="798209567">NGHỀ: VẬN HÀNH CẦN TRỤC</option>
+                <option value="1969781180">NGHỀ: VẬN HÀNH CẦU TRỤC</option>
             </select>
             
-            <input type="text" id="studentName" placeholder="Họ và Tên học viên" class="form-control" style="text-transform: uppercase; font-weight: 600;">
-            <input type="text" id="studentDOB" placeholder="Ngày sinh (ví dụ: 20/05/1995)" class="form-control">
+            <input type="text" id="studentName" placeholder="Họ và Tên học viên" class="form-control" style="text-transform: uppercase;">
+            <input type="text" id="studentDOB" placeholder="Ngày/tháng/năm sinh" class="form-control">
 
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="text" id="khoaThi" value="Khóa 4/2026" class="form-control" style="flex: 1.5; background: #f8f9fa; font-weight: bold;" readonly>
+                <input type="text" id="khoaThi" value="Tháng 4/2026" class="form-control" style="flex: 1.5; background: #eee; font-weight: bold;" readonly>
                 <input type="password" id="maThi" placeholder="Mã thi" class="form-control" style="flex: 1;">
             </div>
 
-            <div style="display:flex; align-items:center; margin: 15px 0; justify-content: center; gap:12px;">
-                <input type="checkbox" id="modeToggle" style="width:22px; height:22px; cursor:pointer;">
-                <label for="modeToggle" style="cursor:pointer; font-weight: 600; color: #444;">Chế độ Ôn tập (Hiện đáp án)</label>
+            <div style="display:flex; align-items:center; margin: 15px 0; justify-content: center; gap:10px;">
+                <input type="checkbox" id="modeToggle" style="width:20px; height:20px;">
+                <label for="modeToggle" style="cursor:pointer; font-weight: 600;">Chế độ Ôn tập</label>
             </div>
 
             <button class="btn-start" id="btnStart" onclick="validateAndStart()">VÀO THI NGAY ➔</button>
@@ -183,31 +120,35 @@
     <div id="quiz-screen">
         <div id="quiz-content"></div>
         <div class="sidebar-right">
-            <div>
-                <h4 style="margin-bottom:15px; text-align:center; color: var(--caee-blue);">SƠ ĐỒ CÂU HỎI</h4>
-                <div id="nav-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:10px;"></div>
-                <button id="submitBtn" class="btn-start" style="margin-top:25px; background: var(--btn-blue);" onclick="submitQuiz()">NỘP BÀI THI</button>
+            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+                <h4 style="margin-bottom:15px; text-align:center;">SƠ ĐỒ CÂU HỎI</h4>
+                <div id="nav-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;"></div>
+                <button id="submitBtn" class="btn-start" style="margin-top:20px; background-color: var(--caee-blue);" onclick="submitQuiz()">NỘP BÀI</button>
             </div>
         </div>
     </div>
 
     <div id="result-screen">
         <div class="result-card">
-            <h2 style="color: var(--caee-blue); margin-bottom: 15px;">KẾT QUẢ SÁT HẠCH</h2>
-            <div style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6;">
-                Học viên: <b id="res-name" style="color: #d63384;">---</b><br>
-                Ngày sinh: <span id="res-dob">---</span><br>
-                Khóa: <span id="res-id">---</span>
+            <div class="result-header">KẾT QUẢ SÁT HẠCH</div>
+            <div style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6; text-align: centered;">
+                Học viên: <b id="res-name" style="color: var(--caee-blue); text-transform: uppercase;">---</b><br>
+                Ngày sinh: <b id="res-dob">---</b><br>
+                Khóa thi: <b id="res-id">---</b>
             </div>
-            <div style="font-size: 3rem; font-weight: 800; color: var(--caee-blue); margin-bottom: 10px;">
-                <span id="res-score">0</span><small style="font-size: 1rem; color: #666;">/30</small>
+            <div class="score-circle">
+                <span id="res-score">0</span>
+                <small style="font-size: 0.8rem; color: #666; font-weight: normal;">/ 30 câu</small>
             </div>
-            <div id="res-badge" style="display: inline-block; padding: 12px 40px; border-radius: 50px; color: white; font-weight: bold; font-size: 1.4rem; margin-bottom: 20px;">---</div>
-            <p style="color: #666; font-size: 0.9rem;">Trang web sẽ tự tải lại sau <span id="countdown">10</span> giây...</p>
+            <div id="res-badge" class="status-badge">---</div>
+            <div class="notice-text">
+                KẾT QUẢ NÀY ĐƯỢC NHÀ TRƯỜNG LƯU LẠI VÀ DÙNG ĐỂ XÉT CẤP CHỨNG CHỈ SƠ CẤP NGHỀ.
+            </div>
+            <p style="margin-top: 25px; color: #666; font-size: 0.85rem;">Hệ thống tự đóng sau <span id="countdown">10</span> giây...</p>
         </div>
     </div>
 
-  <script>
+<script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7h1KNottkL2N-DEBjkUVVlXLblXy25_x1UhqML8WQz3AWeWeXFuvkSQUb4Sxv5eaK5T-VJQEWh4wB/pub?output=csv&gid=";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmpU33n1oc5US8h-XE9F9QdVUsFFwHuFrXS0DlubJaApctwaPMxIw9wIwtGy88xPw4pQ/exec";
     
