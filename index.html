@@ -198,7 +198,7 @@
 
         try {
             // Sử dụng Token thông qua action checkAndLock để ngăn dùng lại mã
-            const res = await fetch(`${WEB_APP_URL}?action=checkAndLock&code=${maThi}`);
+           const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${maThi}`);
             const result = await res.json();
             
             if(result.status === "success" || result.isValid) {
