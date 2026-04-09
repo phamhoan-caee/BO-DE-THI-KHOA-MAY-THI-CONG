@@ -155,6 +155,7 @@
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
 
+    // Tải trước dữ liệu ngay khi mở trang
     window.onload = preloadQuestions;
 
     function preloadQuestions() {
@@ -183,7 +184,7 @@
     };
     window.onfocus = () => { document.getElementById('warning-overlay').style.display = 'none'; };
 
-    // ĐOẠN XỬ LÝ TOKEN ĐÃ ĐƯỢC BỔ SUNG
+    // --- BỔ SUNG ĐOẠN XỬ LÝ TOKEN ---
     async function validateAndStart() {
         const maThi = document.getElementById('maThi').value.trim();
         const name = document.getElementById('studentName').value.trim();
@@ -193,26 +194,27 @@
 
         const btn = document.getElementById('btnStart');
         btn.disabled = true; 
-        btn.innerText = "ĐANG XÁC THỰC MÃ...";
+        btn.innerText = "ĐANG KIỂM TRA MÃ...";
 
         try {
-            // Sử dụng cơ chế checkAndLock để xác thực Token (Mã thi) và khóa ngay lập tức
+            // Sử dụng Token thông qua action checkAndLock để ngăn dùng lại mã
             const res = await fetch(`${WEB_APP_URL}?action=checkAndLock&code=${maThi}`);
             const result = await res.json();
             
-            if(result.status === "success") {
+            if(result.status === "success" || result.isValid) {
                 startQuiz();
             } else { 
-                alert(result.message || "Mã dự thi không hợp lệ hoặc đã được sử dụng!"); 
+                alert(result.message || "Mã thi không hợp lệ hoặc đã được sử dụng!"); 
                 btn.disabled = false; 
                 btn.innerText = "VÀO THI NGAY ➔"; 
             }
         } catch(e) { 
-            alert("Lỗi kết nối Server! Vui lòng báo Giám thị."); 
+            alert("Lỗi kết nối Server! Vui lòng kiểm tra lại mạng."); 
             btn.disabled = false; 
             btn.innerText = "VÀO THI NGAY ➔";
         }
     }
+    // ---------------------------------
 
     function startQuiz() {
         if(allQuestions.length === 0) {
@@ -312,6 +314,7 @@
         const studentDOB = document.getElementById('studentDOB').value;
         const khoaThi = document.getElementById('khoaThi').value;
 
+        // HIỂN THỊ THÔNG TIN RA MÀN HÌNH KẾT QUẢ
         document.getElementById('res-name').innerText = studentName;
         document.getElementById('res-dob').innerText = studentDOB;
         document.getElementById('res-id').innerText = khoaThi;
@@ -323,6 +326,7 @@
         document.getElementById('caee-header').style.display = 'none';
         document.getElementById('result-screen').style.display = 'flex';
 
+        // Gửi dữ liệu về Google Sheets
         const formData = new URLSearchParams();
         formData.append('name', studentName);
         formData.append('birthDate', studentDOB);
