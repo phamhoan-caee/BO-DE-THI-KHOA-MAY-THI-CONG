@@ -124,7 +124,7 @@
 
     <div id="start-screen">
         <div class="welcome-container">
-            <h2 style="text-align:center; color:var(--caee-blue); margin-bottom: 20px;">HỆ THỐNG SÁT HẠCH - CAEE</h2>
+            <h2 style="text-align:center; color:var(--caee-blue); margin-bottom: 20px;">HỆ THỐNG SÁT HẠCH NGHỀ KHOA MÁY THI CÔNG</h2>
             <select id="jobType" class="form-control" style="font-weight: bold;" onchange="preloadQuestions()">
                 <option value="1538604642">NGHỀ: VẬN HÀNH XE NÂNG HÀNG</option>
                 <option value="798209567">NGHỀ: VẬN HÀNH CẦN TRỤC</option>
@@ -135,7 +135,7 @@
             <input type="text" id="studentDOB" placeholder="Ngày/tháng/năm sinh (VD: 01/01/2000)" class="form-control">
 
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="text" id="khoaThi" value="Khóa Tháng 4/2026" class="form-control" style="flex: 1.5; background: #eee; font-weight: bold;" readonly>
+                <input type="text" id="khoaThi" value="Tháng 4/2026" class="form-control" style="flex: 1.5; background: #eee; font-weight: bold;" readonly>
                 <input type="password" id="maThi" placeholder="Mã thi" class="form-control" style="flex: 1;">
             </div>
 
@@ -164,26 +164,30 @@
         <button class="btn-start" style="margin-top: 30px; background: var(--danger);" onclick="toggleDrawer()">ĐÓNG LẠI</button>
     </div>
 
-    <div id="result-screen">
+     <div id="result-screen">
         <div class="result-card">
-            <h3 style="color: var(--caee-blue); margin-bottom: 15px;">KẾT QUẢ SÁT HẠCH</h3>
-            <div style="text-align: left; font-size: 0.95rem; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                Học viên: <b id="res-name">---</b><br>
-                Đợt thi: <b id="res-id">---</b>
+            <div class="result-header">KẾT QUẢ SÁT HẠCH</div>
+            <div style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6; text-align: centered;">
+                Học viên: <b id="res-name" style="color: var(--caee-blue); text-transform: uppercase;">---</b><br>
+                Ngày sinh: <b id="res-dob">---</b><br>
+                Khóa thi: <b id="res-id">---</b>
             </div>
             <div class="score-circle">
                 <span id="res-score">0</span>
-                <small style="font-size: 0.7rem; color: #666; font-weight: normal;">/ 30 câu</small>
+                <small style="font-size: 0.8rem; color: #666; font-weight: normal;">/ 30 câu</small>
             </div>
-            <div id="res-badge" style="padding: 10px; border-radius: 30px; color: white; font-weight: bold; margin-bottom: 15px;">---</div>
-            <p style="color: #666; font-size: 0.8rem;">Hệ thống tự đóng sau <span id="countdown">10</span>s</p>
+            <div id="res-badge" class="status-badge">---</div>
+            <div class="notice-text">
+                KẾT QUẢ NÀY ĐƯỢC NHÀ TRƯỜNG LƯU LẠI VÀ DÙNG ĐỂ XÉT CẤP CHỨNG CHỈ SƠ CẤP NGHỀ.
+            </div>
+            <p style="margin-top: 25px; color: #666; font-size: 0.85rem;">Hệ thống tự đóng sau <span id="countdown">10</span> giây...</p>
         </div>
     </div>
 
 <script>
     // --- CẤU HÌNH ---
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz4H6Qh-lUtHR0o6OMUEoVZvd8iaeSiS1sNaa7fu2UpjdeuIeT3w1mfcVca-cl0ZQck/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6IKNKGItlxORBpsCdUTQgF-hgMwQ0GT49EgxcrG4prbmHEZluv11VfIAgCLEkXzqg/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
