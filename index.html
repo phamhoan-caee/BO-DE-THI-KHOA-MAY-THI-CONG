@@ -130,12 +130,21 @@
 
     <div id="result-screen">
         <div class="result-card">
-            <h2 style="color:var(--caee-blue); margin-bottom: 15px;">KẾT QUẢ BÀI THI</h2>
-            <p id="res-name" style="font-weight: bold; font-size: 1.2rem;"></p>
-            <div style="font-size: 4rem; font-weight: 900; color: var(--caee-blue); margin: 20px 0;" id="res-score">0</div>
-            <p style="font-weight: bold; color: #666;">CÂU TRẢ LỜI ĐÚNG / 30</p>
-            <div id="res-badge" style="margin-top: 20px; padding: 15px; border-radius: 15px; color: white; font-weight: 800; font-size: 1.2rem;">---</div>
-            <p style="margin-top: 20px; color: #888; font-size: 0.8rem;">Hệ thống sẽ tự động tải lại...</p>
+            <div class="result-header">KẾT QUẢ BÀI THI</div>
+            <div style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6; text-align: centered;">
+                Học viên: <b id="res-name" style="color: var(--caee-blue); text-transform: uppercase;">---</b><br>
+                Ngày sinh: <b id="res-dob">---</b><br>
+                Khóa thi: <b id="res-id">---</b>
+            </div>
+            <div class="score-circle">
+                <span id="res-score">0</span>
+                <small style="font-size: 0.8rem; color: #666; font-weight: normal;">/ 30 câu</small>
+            </div>
+            <div id="res-badge" class="status-badge">---</div>
+            <div class="notice-text">
+                KẾT QUẢ NÀY ĐƯỢC NHÀ TRƯỜNG LƯU LẠI VÀ DÙNG ĐỂ XÉT CẤP CHỨNG CHỈ SƠ CẤP NGHỀ.
+            </div>
+            <p style="margin-top: 25px; color: #666; font-size: 0.85rem;">Hệ thống tự đóng sau <span id="countdown">10</span> giây...</p>
         </div>
     </div>
 
