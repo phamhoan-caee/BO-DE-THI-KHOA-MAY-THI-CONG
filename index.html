@@ -149,13 +149,12 @@
     </div>
 
 <script>
-    const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7h1KNottkL2N-DEBjkUVVlXLblXy25_x1UhqML8WQz3AWeWeXFuvkSQUb4Sxv5eaK5T-VJQEWh4wB/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmpU33n1oc5US8h-XE9F9QdVUsFFwHuFrXS0DlubJaApctwaPMxIw9wIwtGy88xPw4pQ/exec";
+    const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxJoNC_QQkcTSktJOlunEVUomWH1h7hpZ9X4VC99CcbS02Ry1xqsIem16IkdbkNHfPi/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
 
-    // Tải trước dữ liệu ngay khi mở trang
     window.onload = preloadQuestions;
 
     function preloadQuestions() {
@@ -308,12 +307,11 @@
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
         const name = document.getElementById('studentName').value.toUpperCase();
-        const dob = document.getElementById('studentDOB').value; // Lấy giá trị ngày sinh học viên nhập
+        const dob = document.getElementById('studentDOB').value;
         const khoaThi = document.getElementById('khoaThi').value;
 
-        // HIỂN THỊ THÔNG TIN RA MÀN HÌNH KẾT QUẢ
         document.getElementById('res-name').innerText = name;
-        document.getElementById('res-dob').innerText = dob; // THÊM DÒNG NÀY ĐỂ HIỆN NGÀY SINH
+        document.getElementById('res-dob').innerText = dob;
         document.getElementById('res-id').innerText = khoaThi;
         document.getElementById('res-score').innerText = score;
         document.getElementById('res-badge').innerText = status;
@@ -325,8 +323,8 @@
 
         // Gửi dữ liệu về Google Sheets
         const formData = new URLSearchParams();
-        formData.append('name', studentName);
-        formData.append('birthDate', studentDOB);
+        formData.append('name', name);
+        formData.append('birthDate', dob);
         formData.append('khoaThi', khoaThi);
         formData.append('jobName', document.getElementById('job-display-header').innerText);
         formData.append('score', score);
