@@ -32,7 +32,6 @@
         #start-screen { min-height: 80vh; display: flex; justify-content: center; align-items: center; }
         .welcome-container { background: white; width: 95%; max-width: 450px; border-radius: 15px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .form-control { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-        
         .btn-start { 
             background: var(--success); color: white; border: none; width: 100%; padding: 15px; 
             border-radius: 12px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
@@ -43,26 +42,13 @@
 
         #quiz-screen { padding: 20px; display: none; grid-template-columns: 1fr 320px; gap: 20px; max-width: 1300px; margin: auto; padding-top: 80px; }
         #quiz-content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 400px; }
-        
-        .option-item {
-            border: 2px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 12px;
-            cursor: pointer; transition: 0.2s; font-weight: 500; display: flex; align-items: center;
-        }
-        .option-item:hover:not(.disabled) { border-color: var(--btn-blue); background: #f0f7ff; }
+        .option-item { border: 2px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; }
         .option-item.selected { background: #e7f0ff; border-color: var(--btn-blue); color: var(--caee-blue); box-shadow: inset 0 0 0 1px var(--btn-blue); }
         .option-item.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; }
         .option-item.wrong { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; }
 
-        #result-screen {
-            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            z-index: 10000; justify-content: center; align-items: center; padding: 20px;
-        }
-        .result-card {
-            background: white; width: 100%; max-width: 500px; border-radius: 24px;
-            padding: 40px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            animation: slideUp 0.5s ease-out;
-        }
+        #result-screen { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
+        .result-card { background: white; width: 100%; max-width: 500px; border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.5s ease-out; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
         .result-header { font-size: 1.5rem; font-weight: bold; color: var(--caee-blue); margin-bottom: 20px; }
@@ -102,7 +88,7 @@
             <input type="text" id="studentName" placeholder="Họ và Tên học viên" class="form-control" style="text-transform: uppercase;">
             <input type="text" id="studentDOB" placeholder="Ngày/tháng/năm sinh" class="form-control">
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="text" id="khoaThi" value="Tháng 4/2026" class="form-control" style="flex: 1.5; background: #eee;" readonly>
+                <input type="text" id="khoaThi" value="Tháng 4/2026" class="form-control" style="flex: 1.5; background: #eee; font-weight: bold;" readonly>
                 <input type="password" id="maThi" placeholder="Mã thi" class="form-control" style="flex: 1;">
             </div>
             <div style="display:flex; align-items:center; margin: 15px 0; justify-content: center; gap:8px;">
@@ -146,7 +132,7 @@
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwFJzZMKalAGND-nG7cwwCVR48LZIJvX6gu80YlTk-ZQNFGMWrpVUTwSC2A5229oxim/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyJOx0el6cXWWbn3ai03QcusUuaRPzYn_SweydAtYjHdPkg4HNxMuBzt0v7jGJQ62N1/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -270,14 +256,14 @@
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
         
         // SỬA LỖI ĐỂ LẤY CHỮ (VALUE) THAY VÌ CẢ Ô (ELEMENT)
-        const name = document.getElementById('studentName').value.toUpperCase();
-        const dob = document.getElementById('studentDOB').value; // Lấy ngày sinh học viên nhập
-        const khoaThi = document.getElementById('khoaThi').value;
+        const nameValue = document.getElementById('studentName').value.toUpperCase();
+        const dobValue = document.getElementById('studentDOB').value; // Lấy ngày sinh học viên nhập
+        const khoaThiValue = document.getElementById('khoaThi').value;
 
         // HIỂN THỊ THÔNG TIN RA MÀN HÌNH KẾT QUẢ
-        document.getElementById('res-name').innerText = name;
-        document.getElementById('res-dob').innerText = dob; // THÊM DÒNG NÀY ĐỂ HIỆN NGÀY SINH
-        document.getElementById('res-id').innerText = khoaThi;
+        document.getElementById('res-name').innerText = nameValue;
+        document.getElementById('res-dob').innerText = dobValue; // THÊM DÒNG NÀY ĐỂ HIỆN NGÀY SINH
+        document.getElementById('res-id').innerText = khoaThiValue;
         document.getElementById('res-score').innerText = score;
         document.getElementById('res-badge').innerText = status;
         document.getElementById('res-badge').style.backgroundColor = score >= 25 ? "var(--success)" : "var(--danger)";
@@ -288,15 +274,15 @@
 
         // Gửi dữ liệu về Google Sheets - SỬ DỤNG .value ĐỂ SỬA LỖI [object HTML]
         const formData = new URLSearchParams();
-        formData.append('name', name);
-        formData.append('birthDate', dob);
-        formData.append('khoaThi', khoaThi);
+        formData.append('name', nameValue);
+        formData.append('birthDate', dobValue);
+        formData.append('khoaThi', khoaThiValue);
         
         // ĐỒNG BỘ TÊN BIẾN GỬI ĐI ĐỂ SỬA LỖI UNDEFINED CỘT NGHỀ
         formData.append('ngheName', document.getElementById('job-display-header').innerText);
         formData.append('score', score);
         formData.append('status', status);
-        formData.append('modeToggle', document.getElementById('modeToggle').checked ? "(ÔN TẬP)" : "(THI)");
+        formData.append('modeToggle', document.getElementById('modeToggle').checked ? "ONTAP" : "THI");
         formData.append('cheat', cheatCount);
 
         // Gửi request POST đến Web App
