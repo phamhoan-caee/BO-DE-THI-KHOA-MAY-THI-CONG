@@ -129,9 +129,10 @@
             <p style="margin-top: 25px; color: #666; font-size: 0.85rem;">Hệ thống tự đóng sau <span id="countdown">15</span> giây...</p>
         </div>
     </div>
+
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyJOx0el6cXWWbn3ai03QcusUuaRPzYn_SweydAtYjHdPkg4HNxMuBzt0v7jGJQ62N1/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzMx0sJypVZq9g5UEN39MvxBQwCH7sBMjp6lrhQEraoyHrRmegRLawJ5n_3uGiINLUP/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -281,7 +282,7 @@
         formData.append('ngheName', document.getElementById('job-display-header').innerText);
         formData.append('score', score);
         formData.append('status', status);
-        formData.append('modeToggle', document.getElementById('modeToggle').checked ? "ONTAP" : "THI");
+        formData.append('modeToggle', document.getElementById('modeToggle').checked ? O\\"Ôn tập" : "Thi");
         formData.append('cheat', cheatCount);
 
         // Gửi request POST đến Web App
