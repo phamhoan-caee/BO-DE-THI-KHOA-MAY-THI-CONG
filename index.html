@@ -32,26 +32,24 @@
         #start-screen { min-height: 80vh; display: flex; justify-content: center; align-items: center; }
         .welcome-container { background: white; width: 95%; max-width: 450px; border-radius: 15px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .form-control { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-        .btn-start { 
-            background: var(--success); color: white; border: none; width: 100%; padding: 15px; 
-            border-radius: 12px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2); font-size: 1.1rem;
-        }
-        .btn-start:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3); opacity: 0.9; }
-        .btn-start:disabled { background: #ccc; cursor: not-allowed; }
-
+        .btn-start { background: var(--success); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        
         #quiz-screen { padding: 20px; display: none; grid-template-columns: 1fr 320px; gap: 20px; max-width: 1300px; margin: auto; padding-top: 80px; }
         #quiz-content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 400px; }
-        .option-item { border: 2px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; }
+        
+        .option-item {
+            border: 2px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 12px;
+            cursor: pointer; transition: 0.2s; font-weight: 500; display: flex; align-items: center;
+        }
+        .option-item:hover:not(.disabled) { border-color: var(--btn-blue); background: #f0f7ff; }
         .option-item.selected { background: #e7f0ff; border-color: var(--btn-blue); color: var(--caee-blue); box-shadow: inset 0 0 0 1px var(--btn-blue); }
         .option-item.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; }
         .option-item.wrong { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; }
 
-        #result-screen { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
-        .result-card { background: white; width: 100%; max-width: 500px; border-radius: 24px; padding: 40px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.5s ease-out; }
+        #result-screen { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
+        .result-card { background: white; width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.5s ease-out; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .result-header { font-size: 1.5rem; font-weight: bold; color: var(--caee-blue); margin-bottom: 20px; }
         .score-circle { width: 110px; height: 110px; border-radius: 50%; border: 6px solid #eee; margin: 15px auto; display: flex; flex-direction: column; justify-content: center; font-size: 2rem; font-weight:bold; color: var(--header-blue); }
         .status-badge { display: inline-block; padding: 8px 25px; border-radius: 50px; color: white; font-weight: bold; margin-bottom: 20px; }
         .notice-text { background: #fff3cd; color: #856404; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; line-height: 1.4; text-align: center; }
@@ -112,7 +110,7 @@
 
     <div id="result-screen">
         <div class="result-card">
-            <div class="result-header">KẾT QUẢ SÁT THI</div>
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--caee-blue); margin-bottom: 20px;">KẾT QUẢ SÁT THI</div>
             <div style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6; text-align: center;">
                 Học viên: <b id="res-name" style="color: var(--caee-blue); text-transform: uppercase;">---</b><br>
                 Ngày sinh: <b id="res-dob">---</b><br>
@@ -132,7 +130,8 @@
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwu5lrj2XoMSUyPyLZPLj6Xpi--RrNou1a_3y-382lF-YL_MiH8hYt3giS_tOO6Sogs/exec";
+    // URL Web App của anh Hoàn
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYeLSm6ndFs7a3wg8027lb8cUencuTq79peVfB8e4LSvXCtooRscrWpb8bk90DGaSs/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -153,6 +152,9 @@
             }
         });
     }
+
+    window.onblur = () => { if(!isSubmitted && selectedQuestions.length > 0) { cheatCount++; document.getElementById('warning-overlay').style.display = 'flex'; } };
+    window.onfocus = () => { document.getElementById('warning-overlay').style.display = 'none'; };
 
     async function validateAndStart() {
         const maThi = document.getElementById('maThi').value.trim();
@@ -241,61 +243,68 @@
         }, 1000);
     }
 
-    // --- Cập nhật hàm submitQuiz để sửa lỗi gửi dữ liệu ---
     async function submitQuiz(auto = false) {
-        if(isSubmitted) return;
-        if(!auto && !confirm("Bạn chắc chắn muốn nộp bài?")) return;
-        isSubmitted = true; clearInterval(timerInterval);
+        if(!auto && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
+        clearInterval(timerInterval); isSubmitted = true;
+        
+        // Lấy dữ liệu học viên đã nhập
+        const nameValue = String(document.getElementById('studentName').value).toUpperCase().trim();
+        const dobValue = String(document.getElementById('studentDOB').value).trim();
+        const khoaThiValue = String(document.getElementById('khoaThi').value).trim();
+        
+        // --- SỬA LỖI Ở ĐÂY ---
+        // Lấy tên nghề cơ bản (ví dụ: VẬN HÀNH XE NÂNG HÀNG)
+        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+        
+        // Kiểm tra chế độ ôn tập
+        const isOnTap = document.getElementById('modeToggle').checked;
+        
+        // Tạo chuỗi Nghề đầy đủ để gửi về Sheets
+        let ngheValue;
+        if (isOnTap) {
+            ngheValue = "NGHỀ: " + rawNghe + " (ÔN TẬP)";
+        } else {
+            ngheValue = "NGHỀ: " + rawNghe + " (THI)";
+        }
+        // ---------------------
 
         let score = 0;
         selectedQuestions.forEach((q, i) => {
             const ans = studentAnswers.find(a => a.qIndex === i);
-            if(ans && ['A','B','C','D'][q.options.indexOf(ans.selected)] === q.answer) score++;
+            const labels = ['A','B','C','D'];
+            if(ans && labels[q.options.indexOf(ans.selected)] === q.answer) score++;
         });
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
-        
-        // SỬA LỖI ĐỂ LẤY CHỮ (VALUE) THAY VÌ CẢ Ô (ELEMENT)
-        const nameValue = document.getElementById('studentName').value.toUpperCase();
-        const dobValue = document.getElementById('studentDOB').value; // Lấy ngày sinh học viên nhập
-        const khoaThiValue = document.getElementById('khoaThi').value;
-
-        // HIỂN THỊ THÔNG TIN RA MÀN HÌNH KẾT QUẢ
         document.getElementById('res-name').innerText = nameValue;
-        document.getElementById('res-dob').innerText = dobValue; // THÊM DÒNG NÀY ĐỂ HIỆN NGÀY SINH
+        document.getElementById('res-dob').innerText = dobValue;
         document.getElementById('res-id').innerText = khoaThiValue;
         document.getElementById('res-score').innerText = score;
         document.getElementById('res-badge').innerText = status;
-        document.getElementById('res-badge').style.backgroundColor = score >= 25 ? "var(--success)" : "var(--danger)";
-        
+        document.getElementById('res-badge').style.backgroundColor = status === "ĐẠT" ? "#28a745" : "#dc3545";
+
         document.getElementById('quiz-screen').style.display = 'none';
         document.getElementById('caee-header').style.display = 'none';
         document.getElementById('result-screen').style.display = 'flex';
 
-        // Gửi dữ liệu về Google Sheets - SỬ DỤNG .value ĐỂ SỬA LỖI [object HTML]
         const formData = new URLSearchParams();
         formData.append('name', nameValue);
         formData.append('birthDate', dobValue);
         formData.append('khoaThi', khoaThiValue);
         
-        // ĐỒNG BỘ TÊN BIẾN GỬI ĐI ĐỂ SỬA LỖI UNDEFINED CỘT NGHỀ
-        formData.append('ngheName', document.getElementById('job-display-header').innerText);
-        formData.append('score', score);
+        // Gửi chuỗi Nghề đã được sửa chuẩn (có (ÔN TẬP) hoặc (THI)) về Sheets
+        formData.append('ngheName', ngheValue); 
+        
+        formData.append('score', score + "/30");
         formData.append('status', status);
-        formData.append('modeToggle', document.getElementById('modeToggle').checked ? "ONTAP" : "THI");
-        formData.append('cheat', cheatCount);
+        formData.append('viPham', cheatCount);
 
-        // Gửi request POST đến Web App
-        fetch(WEB_APP_URL, { method: "POST", body: formData });
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
 
         let c = 15;
-        const countInt = setInterval(() => { 
-            c--; 
-            document.getElementById('countdown').innerText = c; 
-            if(c<=0) {
-                clearInterval(countInt);
-                location.reload();
-            }
+        const cdInterval = setInterval(() => { 
+            if(c > 0) { c--; document.getElementById('countdown').innerText = c; } 
+            else { clearInterval(cdInterval); location.reload(); }
         }, 1000);
     }
 </script>
