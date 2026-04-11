@@ -240,28 +240,28 @@
         document.getElementById('quiz-screen').style.display = 'none';
         document.getElementById('quiz-footer').style.display = 'none';
         document.getElementById('result-screen').style.display = 'flex';
-
-        // Gửi dữ liệu về Server (Apps Script)
+ // Gửi dữ liệu về Google Sheets
         const formData = new URLSearchParams();
-        formData.append("name", document.getElementById('studentName').value);
-        formData.append("birthDate", document.getElementById('studentDOB').value);
-        formData.append("khoaThi", document.getElementById('khoaThi').value);
-        formData.append("score", score);
-        formData.append("status", status);
-        formData.append("jobName", jobName);
-        formData.append("mode", mode);
-        formData.append("cheat", 0); // Có thể bổ sung logic đếm số lần thoát tab nếu cần
+        formData.append('name', studentName);
+        formData.append('birthDate', studentDOB);
+        formData.append('khoaThi', khoaThi);
+        formData.append('jobName', document.getElementById('job-display-header').innerText);
+        formData.append('score', score);
+        formData.append('status', status);
+        formData.append('mode', document.getElementById('modeToggle').checked ? "ONTAP" : "THI");
+        formData.append('cheat', cheatCount);
 
-        try {
-            await fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors", // Tránh lỗi CORS khi gửi từ GitHub Pages
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: formData
-            });
-        } catch (e) { console.error("Lỗi lưu kết quả"); }
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
 
-        setTimeout(() => location.reload(), 15000);
+        let c = 10;
+        const countInt = setInterval(() => { 
+            c--; 
+            document.getElementById('countdown').innerText = c; 
+            if(c<=0) {
+                clearInterval(countInt);
+                location.reload();
+            }
+        }, 1000);
     }
 </script>
 </body>
