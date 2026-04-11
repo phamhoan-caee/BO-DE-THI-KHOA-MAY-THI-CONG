@@ -155,7 +155,6 @@
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
 
-    // Tải trước dữ liệu ngay khi mở trang
     window.onload = preloadQuestions;
 
     function preloadQuestions() {
@@ -170,7 +169,7 @@
                     explanation: i.Giaithich || "Thực hiện đúng quy trình an toàn.",
                     image: i["HINH ANH"] || "" 
                 }));
-                console.log("Data preloaded for GID: " + gid);
+                console.log("Đã tải dữ liệu nghề mới.");
             }
         });
     }
@@ -215,10 +214,7 @@
 
     function startQuiz() {
         if(allQuestions.length === 0) {
-            alert("Đang tải dữ liệu, vui lòng đợi trong giây lát...");
-            preloadQuestions();
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStart').innerText = "VÀO THI NGAY ➔";
+            alert("Dữ liệu chưa sẵn sàng, vui lòng đợi vài giây...");
             return;
         }
         
@@ -296,67 +292,54 @@
     }
 
     async function submitQuiz(auto = false) {
-    if(!auto && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
-    clearInterval(timerInterval);
+        if(!auto && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
+        clearInterval(timerInterval);
+        isSubmitted = true;
 
-    // Lấy giá trị trực tiếp từ các ô Input ở màn hình bắt đầu
-    const nameValue = document.getElementById('studentName').value.toUpperCase();
-    const dobValue = document.getElementById('studentDOB').value;
-    const khoaThiValue = document.getElementById('khoaThi').value;
-    const jobName = document.getElementById('header-job').innerText;
+        const nameValue = document.getElementById('studentName').value.toUpperCase();
+        const dobValue = document.getElementById('studentDOB').value;
+        const khoaThiValue = document.getElementById('khoaThi').value;
+        const jobName = document.getElementById('job-display-header').innerText;
 
-    let score = 0;
-    selectedQuestions.forEach((q, i) => {
-        const ans = studentAnswers.find(a => a.qIndex === i);
-        // Kiểm tra đáp án dựa trên chỉ số (A, B, C, D)
-        if(ans && ['A','B','C','D'][q.options.indexOf(ans.selected)] === q.answer) score++;
-    });
+        let score = 0;
+        selectedQuestions.forEach((q, i) => {
+            const ans = studentAnswers.find(a => a.qIndex === i);
+            const labels = ['A','B','C','D'];
+            if(ans && labels[q.options.indexOf(ans.selected)] === q.answer) score++;
+        });
 
-    const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
+        const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
 
-    // 1. Hiển thị lên màn hình kết quả (Sửa lỗi không hiện tên/ngày sinh)
-    document.getElementById('res-box').innerHTML = `
-        <b>Học viên:</b> ${nameValue}<br>
-        <b>Ngày sinh:</b> ${dobValue}<br>
-        <b>Nghề:</b> ${jobName}<br>
-        <b>Khóa thi:</b> ${khoaThiValue}
-    `;
-    
-    document.getElementById('res-score').innerText = score;
-    const badge = document.getElementById('res-badge');
-    badge.innerText = status;
-    badge.style.backgroundColor = status === "ĐẠT" ? "#28a745" : "#dc3545";
+        // HIỂN THỊ KẾT QUẢ
+        document.getElementById('res-name').innerText = nameValue;
+        document.getElementById('res-dob').innerText = dobValue;
+        document.getElementById('res-id').innerText = khoaThiValue;
+        document.getElementById('res-score').innerText = score;
+        const badge = document.getElementById('res-badge');
+        badge.innerText = status;
+        badge.style.backgroundColor = status === "ĐẠT" ? "#28a745" : "#dc3545";
 
-    document.getElementById('quiz-screen').style.display = 'none';
-    document.getElementById('result-screen').style.display = 'flex';
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('caee-header').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'flex';
 
-    // 2. Gửi dữ liệu về Google Sheets (Sửa lỗi [object HTMLInputElement])
-    const formData = new URLSearchParams();
-    formData.append('name', nameValue); // Truyền giá trị chuỗi
-    formData.append('birthDate', dobValue); // Truyền giá trị chuỗi
-    formData.append('khoaThi', khoaThiValue);
-    formData.append('jobName', jobName + " (" + (document.getElementById('modeToggle').checked ? "ÔN TẬP" : "THI") + ")");
-    formData.append('score', score + "/30");
-    formData.append('status', status);
+        // GỬI DỮ LIỆU VỀ GOOGLE SHEETS
+        const formData = new URLSearchParams();
+        formData.append('name', nameValue);
+        formData.append('birthDate', dobValue);
+        formData.append('khoaThi', khoaThiValue);
+        formData.append('jobName', jobName + (document.getElementById('modeToggle').checked ? " (ÔN TẬP)" : " (THI)"));
+        formData.append('score', score + "/30");
+        formData.append('status', status);
 
-    try {
-        fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: formData });
-    } catch (e) {
-        console.error("Lỗi gửi dữ liệu:", e);
+        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
+
+        let c = 15;
+        const cdInterval = setInterval(() => { 
+            if(c > 0) { c--; document.getElementById('countdown').innerText = c; } 
+            else { clearInterval(cdInterval); location.reload(); }
+        }, 1000);
     }
-
-    // Đếm ngược quay lại
-    let c = 15;
-    const cdInterval = setInterval(() => { 
-        if(c > 0) { 
-            c--; 
-            document.getElementById('countdown').innerText = c; 
-        } else {
-            clearInterval(cdInterval);
-            location.reload(); 
-        }
-    }, 1000);
-}
 </script>
 </body>
 </html>
