@@ -150,7 +150,7 @@
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzVQQUwnIT0Zd10djEdrJk_j_ecIYTNK2DjkO-aHGFGJJEa8TQxUm4tMBGkxwJEYwJ2/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcG2nzegAZw0l9lP-setN3LpwfVI02O83UV3ZNsca2ncMQ_aeYJLfOiwdkuRjgMx9e/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -299,7 +299,7 @@
         const nameValue = document.getElementById('studentName').value.toUpperCase();
         const dobValue = document.getElementById('studentDOB').value;
         const khoaThiValue = document.getElementById('khoaThi').value;
-        const jobName = document.getElementById('job-display-header').innerText;
+        const ngheName = document.getElementById('job-display-header').innerText;
 
         let score = 0;
         selectedQuestions.forEach((q, i) => {
@@ -328,7 +328,7 @@
         formData.append('name', nameValue);
         formData.append('birthDate', dobValue);
         formData.append('khoaThi', khoaThiValue);
-        formData.append('jobName', jobName + (document.getElementById('modeToggle').checked ? " (ÔN TẬP)" : " (THI)"));
+        formData.append('ngheName', jobName + (document.getElementById('modeToggle').checked ? " (ÔN TẬP)" : " (THI)"));
         formData.append('score', score + "/30");
         formData.append('status', status);
 
