@@ -296,56 +296,67 @@
     }
 
     async function submitQuiz(auto = false) {
-        if(isSubmitted) return;
-        if(!auto && !confirm("Bạn chắc chắn muốn nộp bài?")) return;
-        isSubmitted = true; clearInterval(timerInterval);
+    if(!auto && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
+    clearInterval(timerInterval);
 
-        let score = 0;
-        selectedQuestions.forEach((q, i) => {
-            const ans = studentAnswers.find(a => a.qIndex === i);
-            if(ans && ['A','B','C','D'][q.options.indexOf(ans.selected)] === q.answer) score++;
-        });
+    // Lấy giá trị trực tiếp từ các ô Input ở màn hình bắt đầu
+    const nameValue = document.getElementById('studentName').value.toUpperCase();
+    const dobValue = document.getElementById('studentDOB').value;
+    const khoaThiValue = document.getElementById('khoaThi').value;
+    const jobName = document.getElementById('header-job').innerText;
 
-        const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
-        const name = document.getElementById('studentName').value.toUpperCase();
-        const dob = document.getElementById('studentDOB').value; // Lấy giá trị ngày sinh học viên nhập
-        const khoaThi = document.getElementById('khoaThi').value;
+    let score = 0;
+    selectedQuestions.forEach((q, i) => {
+        const ans = studentAnswers.find(a => a.qIndex === i);
+        // Kiểm tra đáp án dựa trên chỉ số (A, B, C, D)
+        if(ans && ['A','B','C','D'][q.options.indexOf(ans.selected)] === q.answer) score++;
+    });
 
-        // HIỂN THỊ THÔNG TIN RA MÀN HÌNH KẾT QUẢ
-        document.getElementById('res-name').innerText = name;
-        document.getElementById('res-dob').innerText = dob; // THÊM DÒNG NÀY ĐỂ HIỆN NGÀY SINH
-        document.getElementById('res-id').innerText = khoaThi;
-        document.getElementById('res-score').innerText = score;
-        document.getElementById('res-badge').innerText = status;
-        document.getElementById('res-badge').style.backgroundColor = score >= 25 ? "var(--success)" : "var(--danger)";
-        
-        document.getElementById('quiz-screen').style.display = 'none';
-        document.getElementById('caee-header').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'flex';
+    const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
 
-        // Gửi dữ liệu về Google Sheets
-        const formData = new URLSearchParams();
-        formData.append('name', studentName);
-        formData.append('birthDate', studentDOB);
-        formData.append('khoaThi', khoaThi);
-        formData.append('jobName', document.getElementById('job-display-header').innerText);
-        formData.append('score', score);
-        formData.append('status', status);
-        formData.append('mode', document.getElementById('modeToggle').checked ? "ONTAP" : "THI");
-        formData.append('cheat', cheatCount);
+    // 1. Hiển thị lên màn hình kết quả (Sửa lỗi không hiện tên/ngày sinh)
+    document.getElementById('res-box').innerHTML = `
+        <b>Học viên:</b> ${nameValue}<br>
+        <b>Ngày sinh:</b> ${dobValue}<br>
+        <b>Nghề:</b> ${jobName}<br>
+        <b>Khóa thi:</b> ${khoaThiValue}
+    `;
+    
+    document.getElementById('res-score').innerText = score;
+    const badge = document.getElementById('res-badge');
+    badge.innerText = status;
+    badge.style.backgroundColor = status === "ĐẠT" ? "#28a745" : "#dc3545";
 
-        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'flex';
 
-        let c = 10;
-        const countInt = setInterval(() => { 
+    // 2. Gửi dữ liệu về Google Sheets (Sửa lỗi [object HTMLInputElement])
+    const formData = new URLSearchParams();
+    formData.append('name', nameValue); // Truyền giá trị chuỗi
+    formData.append('birthDate', dobValue); // Truyền giá trị chuỗi
+    formData.append('khoaThi', khoaThiValue);
+    formData.append('jobName', jobName + " (" + (document.getElementById('modeToggle').checked ? "ÔN TẬP" : "THI") + ")");
+    formData.append('score', score + "/30");
+    formData.append('status', status);
+
+    try {
+        fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: formData });
+    } catch (e) {
+        console.error("Lỗi gửi dữ liệu:", e);
+    }
+
+    // Đếm ngược quay lại
+    let c = 15;
+    const cdInterval = setInterval(() => { 
+        if(c > 0) { 
             c--; 
             document.getElementById('countdown').innerText = c; 
-            if(c<=0) {
-                clearInterval(countInt);
-                location.reload();
-            }
-        }, 1000);
-    }
+        } else {
+            clearInterval(cdInterval);
+            location.reload(); 
+        }
+    }, 1000);
+}
 </script>
 </body>
 </html>
