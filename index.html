@@ -155,19 +155,34 @@
         });
     }
 
+    // SỬA LỖI KẾT NỐI MÃ THI
     async function validateAndStart() {
         const maThi = document.getElementById('maThi').value.trim();
         const name = document.getElementById('studentName').value.trim();
         const dob = document.getElementById('studentDOB').value.trim();
         if(!name || !maThi || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
+        
         const btn = document.getElementById('btnStart');
         btn.disabled = true; btn.innerText = "ĐANG KIỂM TRA...";
+
         try {
-            const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${maThi}`);
+            // Sử dụng URLSearchParams để tránh lỗi ký tự đặc biệt
+            const params = new URLSearchParams({ action: "checkCode", code: maThi });
+            const res = await fetch(`${WEB_APP_URL}?${params.toString()}`);
             const result = await res.json();
+            
             if(result.isValid) startQuiz();
-            else { alert("Mã thi không đúng!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
-        } catch(e) { alert("Lỗi kết nối Server!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
+            else { 
+                alert("Mã thi không đúng!"); 
+                btn.disabled = false; 
+                btn.innerText = "VÀO THI NGAY ➔"; 
+            }
+        } catch(e) { 
+            console.error(e);
+            alert("Lỗi kết nối Server! Vui lòng thử lại."); 
+            btn.disabled = false; 
+            btn.innerText = "VÀO THI NGAY ➔"; 
+        }
     }
 
     function startQuiz() {
@@ -183,6 +198,70 @@
         startTimer();
     }
 
+    // SỬA LỖI GỬI DỮ LIỆU [object HTML...]
+    async function submitQuiz(auto = false) {
+        if(!auto && !confirm("Bạn muốn nộp bài?")) return;
+        clearInterval(timerInterval); 
+        isSubmitted = true;
+
+        // Lấy giá trị chuỗi thuần túy từ Input
+        const nameValue = document.getElementById('studentName').value.trim().toUpperCase();
+        const dobValue = document.getElementById('studentDOB').value.trim();
+        const khoaThiValue = document.getElementById('khoaThi').value.trim();
+        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+        const modeLabel = document.getElementById('modeToggle').checked ? " (ÔN TẬP)" : " (THI)";
+        const ngheValue = rawNghe + modeLabel;
+
+        let score = 0;
+        selectedQuestions.forEach((q, i) => {
+            const ans = studentAnswers.find(a => a.qIndex === i);
+            const labels = ['A','B','C','D'];
+            if(ans && labels[q.options.indexOf(ans.selected)] === q.answer) score++;
+        });
+
+        const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
+
+        // Cập nhật giao diện kết quả
+        document.getElementById('res-name').innerText = nameValue;
+        document.getElementById('res-dob').innerText = dobValue;
+        document.getElementById('res-score').innerText = score;
+        const badge = document.getElementById('res-badge');
+        badge.innerText = status; 
+        badge.style.backgroundColor = status === "ĐẠT" ? "#28a745" : "#dc3545";
+        
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'flex';
+
+        // ĐỒNG BỘ TÊN BIẾN VỚI APPS SCRIPT
+        const formData = new URLSearchParams();
+        formData.append('name', nameValue);
+        formData.append('birthDate', dobValue);
+        formData.append('khoaThi', khoaThiValue);
+        formData.append('ngheName', ngheValue);
+        formData.append('score', score + "/30");
+        formData.append('status', status);
+        formData.append('viPham', cheatCount);
+
+        // Gửi dữ liệu bằng POST
+        fetch(WEB_APP_URL, { 
+            method: "POST", 
+            body: formData,
+            mode: "no-cors" // Quan trọng để tránh lỗi CORS
+        });
+
+        let c = 15;
+        const cdInterval = setInterval(() => { 
+            if(c > 0) { 
+                c--; 
+                document.getElementById('countdown').innerText = c; 
+            } else { 
+                clearInterval(cdInterval); 
+                location.reload(); 
+            }
+        }, 1000);
+    }
+
+    // Các hàm khác giữ nguyên...
     function showQuestion(idx) {
         currentQuestionIndex = idx;
         const q = selectedQuestions[idx];
@@ -190,13 +269,12 @@
         const isPractice = document.getElementById('modeToggle').checked;
         const labels = ['A', 'B', 'C', 'D'];
 
-        // CẬP NHẬT THANH TIẾN TRÌNH
         const percent = Math.round(((studentAnswers.length) / 30) * 100);
         document.getElementById('progress-bar').style.width = percent + '%';
         document.getElementById('progress-bar').innerText = percent + '%';
 
         let html = `<h3>Câu ${idx + 1}/30: ${q.question}</h3>`;
-        if(q.image) html += `<div class="q-image-box"><img src="${q.image}"></div>`;
+        if(q.image) html += `<div class="q-image-box" style="text-align:center; margin:10px 0;"><img src="${q.image}" style="max-height:200px; border-radius:8px;"></div>`;
 
         q.options.forEach((opt, i) => {
             let cls = "";
@@ -226,7 +304,8 @@
     }
 
     function renderGrid() {
-        const grid = document.getElementById('nav-grid'); if(!grid) return;
+        const grid = document.getElementById('nav-grid');
+        if(!grid) return;
         grid.innerHTML = "";
         selectedQuestions.forEach((_, i) => {
             const hasAns = studentAnswers.some(a => a.qIndex === i);
@@ -243,40 +322,6 @@
             document.getElementById('timer').innerText = `${m}:${s<10?'0':''}${s}`;
             if(timeLeft <= 0) submitQuiz(true);
         }, 1000);
-    }
-
-    async function submitQuiz(auto = false) {
-        if(!auto && !confirm("Bạn muốn nộp bài?")) return;
-        clearInterval(timerInterval); isSubmitted = true;
-        const nameValue = String(document.getElementById('studentName').value).toUpperCase().trim();
-        const dobValue = String(document.getElementById('studentDOB').value).trim();
-        const khoaThiValue = String(document.getElementById('khoaThi').value).trim();
-        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
-        const modeLabel = document.getElementById('modeToggle').checked ? " (ÔN TẬP)" : " (THI)";
-        const ngheValue = rawNghe + modeLabel;
-        let score = 0;
-        selectedQuestions.forEach((q, i) => {
-            const ans = studentAnswers.find(a => a.qIndex === i);
-            const labels = ['A','B','C','D'];
-            if(ans && labels[q.options.indexOf(ans.selected)] === q.answer) score++;
-        });
-        const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
-        document.getElementById('res-name').innerText = nameValue;
-        document.getElementById('res-dob').innerText = dobValue;
-        document.getElementById('res-score').innerText = score;
-        const badge = document.getElementById('res-badge');
-        badge.innerText = status; badge.style.backgroundColor = status === "ĐẠT" ? "#28a745" : "#dc3545";
-        document.getElementById('quiz-screen').style.display = 'none';
-        document.getElementById('progress-container').style.display = 'none';
-        document.getElementById('sub-header').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'flex';
-        const formData = new URLSearchParams();
-        formData.append('name', nameValue); formData.append('birthDate', dobValue);
-        formData.append('khoaThi', khoaThiValue); formData.append('ngheName', ngheValue);
-        formData.append('score', score + "/30"); formData.append('status', status); formData.append('viPham', cheatCount);
-        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
-        let c = 15;
-        const cdInterval = setInterval(() => { if(c > 0) { c--; document.getElementById('countdown').innerText = c; } else { clearInterval(cdInterval); location.reload(); }}, 1000);
     }
 </script>
 </body>
