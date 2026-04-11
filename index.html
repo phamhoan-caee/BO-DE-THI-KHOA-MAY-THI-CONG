@@ -95,9 +95,9 @@
         <div class="welcome-container">
             <h2 style="text-align:center; color:var(--caee-blue); margin-bottom: 20px;">HỆ THỐNG SÁT HẠCH - CAEE</h2>
             <select id="jobType" class="form-control" style="font-weight: bold;" onchange="preloadQuestions()">
-                <option value="1538604642">NGHỀ: VẬN HÀNH XE NÂNG HÀNG</option>
-                <option value="798209567">NGHỀ: VẬN HÀNH CẦN TRỤC</option>
-                <option value="1969781180">NGHỀ: VẬN HÀNH CẦU TRỤC</option>
+                <option value="1538604642">VẬN HÀNH XE NÂNG HÀNG</option>
+                <option value="798209567">VẬN HÀNH CẦN TRỤC</option>
+                <option value="1969781180">VẬN HÀNH CẦU TRỤC</option>
             </select>
             
             <input type="text" id="studentName" placeholder="Họ và Tên học viên" class="form-control" style="text-transform: uppercase;">
@@ -131,7 +131,7 @@
     <div id="result-screen">
         <div class="result-card">
             <div class="result-header">KẾT QUẢ SÁT HẠCH</div>
-            <div style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6; text-align: centered;">
+            <div style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6; text-align: center;">
                 Học viên: <b id="res-name" style="color: var(--caee-blue); text-transform: uppercase;">---</b><br>
                 Ngày sinh: <b id="res-dob">---</b><br>
                 Khóa thi: <b id="res-id">---</b>
@@ -144,13 +144,14 @@
             <div class="notice-text">
                 KẾT QUẢ NÀY ĐƯỢC NHÀ TRƯỜNG LƯU LẠI VÀ DÙNG ĐỂ XÉT CẤP CHỨNG CHỈ SƠ CẤP NGHỀ.
             </div>
-            <p style="margin-top: 25px; color: #666; font-size: 0.85rem;">Hệ thống tự đóng sau <span id="countdown">10</span> giây...</p>
+            <p style="margin-top: 25px; color: #666; font-size: 0.85rem;">Hệ thống tự đóng sau <span id="countdown">15</span> giây...</p>
         </div>
     </div>
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcG2nzegAZw0l9lP-setN3LpwfVI02O83UV3ZNsca2ncMQ_aeYJLfOiwdkuRjgMx9e/exec";
+    // Hãy đảm bảo URL này chính xác với bản triển khai Apps Script mới nhất của anh
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYeLSm6ndFs7a3wg8027lb8cUencuTq79peVfB8e4LSvXCtooRscrWpb8bk90DGaSs/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -265,8 +266,9 @@
 
     function selectAns(qIdx, ans) {
         if(isSubmitted) return;
-        const i = studentAnswers.findIndex(a => a.qIndex === qIdx);
-        if(i > -1) studentAnswers[i].selected = ans;
+        const i = studentAnswers.findIndex(a => a.qIndex === i); // Dùng let i thay const i để tìm kiếm
+        const findIndex = studentAnswers.findIndex(a => a.qIndex === qIdx);
+        if(findIndex > -1) studentAnswers[findIndex].selected = ans;
         else studentAnswers.push({qIndex: qIdx, selected: ans});
         showQuestion(qIdx);
     }
@@ -296,10 +298,13 @@
         clearInterval(timerInterval);
         isSubmitted = true;
 
-        const nameValue = document.getElementById('studentName').value.toUpperCase();
-        const dobValue = document.getElementById('studentDOB').value;
-        const khoaThiValue = document.getElementById('khoaThi').value;
-        const ngheName = document.getElementById('job-display-header').innerText;
+        // LẤY GIÁ TRỊ VÀ ÉP KIỂU CHUỖI ĐỂ TRÁNH LỖI [OBJECT]
+        const nameValue = String(document.getElementById('studentName').value).toUpperCase().trim();
+        const dobValue = String(document.getElementById('studentDOB').value).trim();
+        const khoaThiValue = String(document.getElementById('khoaThi').value).trim();
+        const rawNghe = document.getElementById('job-display-header').innerText;
+        const modeLabel = document.getElementById('modeToggle').checked ? " (ÔN TẬP)" : " (THI)";
+        const ngheValue = rawNghe + modeLabel;
 
         let score = 0;
         selectedQuestions.forEach((q, i) => {
@@ -310,7 +315,7 @@
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
 
-        // HIỂN THỊ KẾT QUẢ
+        // HIỂN THỊ LÊN MÀN HÌNH KẾT QUẢ
         document.getElementById('res-name').innerText = nameValue;
         document.getElementById('res-dob').innerText = dobValue;
         document.getElementById('res-id').innerText = khoaThiValue;
@@ -323,15 +328,17 @@
         document.getElementById('caee-header').style.display = 'none';
         document.getElementById('result-screen').style.display = 'flex';
 
-        // GỬI DỮ LIỆU VỀ GOOGLE SHEETS
+        // GỬI DỮ LIỆU VỀ GOOGLE SHEETS - SỬ DỤNG NGHENAME
         const formData = new URLSearchParams();
         formData.append('name', nameValue);
         formData.append('birthDate', dobValue);
         formData.append('khoaThi', khoaThiValue);
-        formData.append('ngheName', jobName + (document.getElementById('modeToggle').checked ? " (ÔN TẬP)" : " (THI)"));
+        formData.append('ngheName', ngheValue); // Đã đổi thành ngheName đồng bộ
         formData.append('score', score + "/30");
         formData.append('status', status);
+        formData.append('viPham', cheatCount);
 
+        // Thực hiện gửi
         fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
 
         let c = 15;
