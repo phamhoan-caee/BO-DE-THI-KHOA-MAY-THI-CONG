@@ -130,7 +130,7 @@
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
    
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwhuVBXOci4ucVgm9p3kVH1ivKNNT_R1u-6su9qy3ghevaSolfVAYRvZllDhTPSpNcw/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyJtlReRIaPx9IoMjXW96lrH14WvuHBR3UzKTBwo0LdzdvBWR6eoz9jc-oJD_WN4PE/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -300,8 +300,14 @@
     formData.append('status', status);
     formData.append('viPham', cheatCount);
 
-    fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
-
+fetch(WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors", // Giữ nguyên để tránh lỗi CORS
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: formData.toString() // Quan trọng: Phải toString() khi dùng URLSearchParams
+});
         let c = 15;
         const cdInterval = setInterval(() => { 
             if(c > 0) { c--; document.getElementById('countdown').innerText = c; } 
