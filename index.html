@@ -16,35 +16,31 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body { background-color: var(--light-bg); font-family: 'Segoe UI', Arial, sans-serif; overflow-x: hidden; }
 
+        /* CẬP NHẬT CSS THÔNG BÁO GIAN LẬN THEO ẢNH MẪU */
         #warning-overlay {
-            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(220, 53, 69, 0.9); color: white; z-index: 9999;
-            justify-content: center; align-items: center; text-align: center; font-size: 2rem;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(220, 53, 69, 0.85); backdrop-filter: blur(8px);
+            color: white; z-index: 10000;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .warning-box { padding: 30px; border-radius: 20px; }
+        .warning-icon { font-size: 5rem; margin-bottom: 15px; animation: pulse 1.5s infinite; }
+        .warning-title { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        .warning-text { font-size: 1.3rem; opacity: 0.95; margin-bottom: 20px; }
+        #cheat-count-msg { font-weight: bold; background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px; font-size: 1.1rem; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
-        /* --- HEADER TỰ ẨN --- */
         .caee-header {
-            background: var(--header-blue); color: white; padding: 0 10px;
-            display: none; justify-content: center; align-items: center;
-            position: fixed; top: 0; width: 100%; z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            height: 60px; transition: transform 0.8s ease-in-out;
+            background: var(--header-blue); color: white; padding: 10px 20px;
+            display: none; justify-content: space-between; align-items: center;
+            position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .caee-header.hidden { transform: translateY(-100%); }
-
-        /* --- ĐỒNG HỒ TRONG SUỐT BÊN PHẢI --- */
-        .timer-box {
-            position: fixed; top: 70px; right: 20px; z-index: 1001;
-            background: rgba(255, 51, 51, 0.15); /* Trong suốt */
-            backdrop-filter: blur(10px); /* Làm mờ hậu cảnh */
-            -webkit-backdrop-filter: blur(10px);
-            color: #ff3333; border: 2px solid rgba(255, 51, 51, 0.5);
-            padding: 8px 20px; border-radius: 50px; /* Bo góc cực mạnh */
-            font-weight: 900; font-variant-numeric: tabular-nums;
-            min-width: 90px; text-align: center; font-size: 1.3rem;
-            box-shadow: 0 4px 15px rgba(255, 51, 51, 0.2);
-            transition: all 0.3s;
-        }
+        .timer-box { background: #ff3333; padding: 5px 15px; border-radius: 4px; font-weight: bold; min-width: 80px; text-align: center; }
 
         #start-screen { min-height: 80vh; display: flex; justify-content: center; align-items: center; }
         .welcome-container { background: white; width: 95%; max-width: 450px; border-radius: 15px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
@@ -54,75 +50,14 @@
         #quiz-screen { padding: 20px; display: none; grid-template-columns: 1fr 320px; gap: 20px; max-width: 1300px; margin: auto; padding-top: 80px; }
         #quiz-content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 400px; }
         
-        /* --- HIỆU ỨNG PHÁT SÁNG (GLOW EFFECT) --- */
-       .option-item {
-    border: 2px solid #eee;
-    border-radius: 12px; /* Bo góc mượt hơn */
-    padding: 15px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-weight: 500;
-    
-    /* Chống tràn chữ bằng Flexbox */
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    
-    /* Hiệu ứng đổ bóng nhẹ mặc định */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    word-break: break-word;
-    line-height: 1.5;
-    font-size: 16px;
-}
-
-/* --- 2. HIỆU ỨNG PHÁT SÁNG & ĐỔ BÓNG KHI CHỌN --- */
-.option-item.selected {
-    background: #e7f0ff;
-    border-color: var(--btn-blue);
-    color: var(--caee-blue);
-    /* Glow tỏa ra màu xanh */
-    box-shadow: 0 0 15px rgba(51, 102, 255, 0.4), inset 0 0 0 1px var(--btn-blue);
-    transform: translateX(5px); /* Nhích nhẹ sang phải khi chọn */
-}
-
-/* Glow Xanh khi đúng (Chế độ ôn tập) */
-.option-item.correct {
-    background: #d4edda !important;
-    border-color: #28a745 !important;
-    color: #155724 !important;
-    box-shadow: 0 0 20px rgba(40, 167, 69, 0.5) !important;
-}
-
-/* Glow Đỏ khi sai (Chế độ ôn tập) */
-.option-item.wrong {
-    background: #f8d7da !important;
-    border-color: #dc3545 !important;
-    color: #721c24 !important;
-    box-shadow: 0 0 20px rgba(220, 53, 69, 0.5) !important;
-}
-
-/* --- 3. ĐIỀU CHỈNH CỰC NHỎ CHO ĐIỆN THOẠI --- */
-@media (max-width: 600px) {
-    .option-item {
-        padding: 12px;
-        font-size: 14px; /* Thu nhỏ chữ để hiện đủ nội dung */
-        margin-bottom: 8px;
-    }
-
-    /* Đảm bảo chữ A, B, C, D không bị méo */
-    .option-item b {
-        min-width: 22px;
-        color: var(--caee-blue);
-        flex-shrink: 0;
-    }
-
-    /* Thu nhỏ chữ câu hỏi trên mobile */
-    #quiz-content h3 {
-        font-size: 16px !important;
-        margin-bottom: 12px;
-    }
-}
+        .option-item {
+            border: 2px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 12px;
+            cursor: pointer; transition: 0.2s; font-weight: 500; display: flex; align-items: center;
+        }
+        .option-item:hover:not(.disabled) { border-color: var(--btn-blue); background: #f0f7ff; }
+        .option-item.selected { background: #e7f0ff; border-color: var(--btn-blue); color: var(--caee-blue); box-shadow: inset 0 0 0 1px var(--btn-blue); }
+        .option-item.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; }
+        .option-item.wrong { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; }
 
         #result-screen { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
         .result-card { background: white; width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.5s ease-out; }
@@ -133,32 +68,35 @@
         .notice-text { background: #fff3cd; color: #856404; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; line-height: 1.4; text-align: center; }
         .q-image-box img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
 
-        @media (max-width: 900px) { 
-            #quiz-screen { grid-template-columns: 1fr; padding-top: 40px; } 
-            .timer-box { top: 10px; right: 10px; font-size: 1.1rem; padding: 5px 15px; }
-        }
+        @media (max-width: 900px) { #quiz-screen { grid-template-columns: 1fr; padding-top: 80px; } }
     </style>
 </head>
 <body oncontextmenu="return false">
 
-    <div id="warning-overlay">⚠️ PHÁT HIỆN GIAN LẬN! <br> Vui lòng quay lại màn hình thi.</div>
+    <div id="warning-overlay">
+        <div class="warning-box">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-title">PHÁT HIỆN GIAN LẬN!</div>
+            <div class="warning-text">Vui lòng quay lại màn hình thi ngay lập tức.</div>
+            <div id="cheat-count-msg"></div>
+        </div>
+    </div>
 
     <div class="caee-header" id="caee-header">
         <div style="flex-grow: 1; text-align: center;">
-            <div style="font-weight: bold; font-size: 12px; opacity: 0.8;">TRƯỜNG CAO ĐẲNG CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
+            <div style="font-weight: bold; font-size: 14px;">TRƯỜNG CAO ĐẲNG CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
             <div id="job-display-header" style="font-weight: bold; font-size: 14px; color: #ffd700;">ĐANG TẢI...</div>
-            <div style="font-size: 12px;">HỌC VIÊN: <span id="display-name" style="font-weight: bold;">---</span></div>
+            <div style="font-size: 13px;">HỌC VIÊN: <span id="display-name" style="font-weight: bold;">---</span></div>
         </div>
+        <div id="timer" class="timer-box">20:00</div>
     </div>
-    
-    <div id="timer" class="timer-box" style="display: none;">20:00</div>
 
     <div id="start-screen">
         <div class="welcome-container">
             <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 15px; color: #1a73e8; font-weight: bold;">TRƯỜNG CĐ CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
                 <div style="font-size: 15px; color: #d32f2f; font-weight: 800; margin-top: 5px; text-transform: uppercase;">KHOA MÁY THI CÔNG</div>
-            </div>
+      </div>
             <select id="jobType" class="form-control" style="font-weight: bold;" onchange="preloadQuestions()">
                 <option value="1538604642">VẬN HÀNH XE NÂNG HÀNG</option>
                 <option value="798209567">VẬN HÀNH CẦN TRỤC</option>
@@ -211,7 +149,8 @@
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxYeLSm6ndFs7a3wg8027lb8cUencuTq79peVfB8e4LSvXCtooRscrWpb8bk90DGaSs/exec";
+   
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyIv7bxxRJVZZQtm2-pCav7R_BICI4YWCVtuZRXjsWWiZNuGO3Bpa6o3gyoTHgagNCx/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -233,26 +172,52 @@
         });
     }
 
-    window.onblur = () => { if(!isSubmitted && selectedQuestions.length > 0) { cheatCount++; document.getElementById('warning-overlay').style.display = 'flex'; } };
-    window.onfocus = () => { document.getElementById('warning-overlay').style.display = 'none'; };
+    /* CẬP NHẬT LOGIC GIÁM SÁT RỜI MÀN HÌNH */
+    window.onblur = () => { 
+        if(!isSubmitted && selectedQuestions.length > 0) { 
+            cheatCount++; 
+            const overlay = document.getElementById('warning-overlay');
+            const msg = document.getElementById('cheat-count-msg');
+            
+            overlay.style.display = 'flex';
+            msg.innerText = `Lần vi phạm: ${cheatCount} / 3`;
 
-    async function validateAndStart() {
-        const maThi = document.getElementById('maThi').value.trim();
-        const name = document.getElementById('studentName').value.trim();
-        const dob = document.getElementById('studentDOB').value.trim();
-        if(!name || !maThi || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
-        
-        const btn = document.getElementById('btnStart');
-        btn.disabled = true; btn.innerText = "ĐANG KIỂM TRA...";
+            // Tự động nộp bài nếu vi phạm từ 3 lần
+            if (cheatCount >= 3) {
+                alert("BẠN ĐÃ VI PHẠM QUÁ 3 LẦN! HỆ THỐNG SẼ TỰ ĐỘNG NỘP BÀI.");
+                submitQuiz(true); 
+            }
+        } 
+    };
 
-        try {
-            const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${maThi}`);
-            const result = await res.json();
-            if(result.isValid) startQuiz();
-            else { alert("Mã thi không đúng!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
-        } catch(e) { alert("Lỗi kết nối Server! Vui lòng thử lại."); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
-    }
+    window.onfocus = () => { 
+        if (cheatCount < 3) {
+            setTimeout(() => {
+                document.getElementById('warning-overlay').style.display = 'none';
+            }, 500);
+        }
+    };
 
+  async function validateAndStart() {
+    const maThi = document.getElementById('maThi').value.trim();
+    const name = document.getElementById('studentName').value.trim();
+    const dob = document.getElementById('studentDOB').value.trim();
+    const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+    const isOnTap = document.getElementById('modeToggle').checked;
+    const ngheFull = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
+
+    if(!name || !maThi || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
+    
+    const btn = document.getElementById('btnStart');
+    btn.disabled = true; btn.innerText = "ĐANG KIỂM TRA...";
+
+    try {
+        const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${encodeURIComponent(maThi)}&name=${encodeURIComponent(name)}&ngheName=${encodeURIComponent(ngheFull)}`);
+        const result = await res.json();
+        if(result.isValid) startQuiz();
+        else { alert(result.message || "Mã thi không đúng!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
+    } catch(e) { alert("Lỗi kết nối Server!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
+}
     function startQuiz() {
         if(allQuestions.length === 0) return alert("Vui lòng đợi dữ liệu tải...");
         selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 30);
@@ -261,14 +226,7 @@
         
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('caee-header').style.display = 'flex';
-        document.getElementById('timer').style.display = 'block';
         document.getElementById('quiz-screen').style.display = 'grid';
-        
-        // --- ẨN HEADER SAU 10 GIÂY ---
-        setTimeout(() => {
-            document.getElementById('caee-header').classList.add('hidden');
-        }, 10000);
-
         showQuestion(0);
         startTimer();
     }
@@ -332,15 +290,16 @@
 
     async function submitQuiz(auto = false) {
         if(!auto && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
-        clearInterval(timerInterval); isSubmitted = true;
+        clearInterval(timerInterval); 
+        isSubmitted = true;
         
-        const nameValue = String(document.getElementById('studentName').value).toUpperCase().trim();
-        const dobValue = String(document.getElementById('studentDOB').value).trim();
-        const khoaThiValue = String(document.getElementById('khoaThi').value).trim();
-        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
-        const isOnTap = document.getElementById('modeToggle').checked;
-        
-        let ngheValue = isOnTap ? "NGHỀ: " + rawNghe + " (ÔN TẬP)" : "NGHỀ: " + rawNghe + " (THI)";
+        const maThiValue = document.getElementById('maThi').value.trim().toUpperCase();
+        const nameValue  = document.getElementById('studentName').value.toUpperCase().trim();
+        const dobValue   = document.getElementById('studentDOB').value.trim();
+        const khoaThiValue = document.getElementById('khoaThi').value.trim();
+        const rawNghe    = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+        const isOnTap    = document.getElementById('modeToggle').checked;
+        const ngheValue  = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
 
         let score = 0;
         selectedQuestions.forEach((q, i) => {
@@ -350,6 +309,7 @@
         });
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
+
         document.getElementById('res-name').innerText = nameValue;
         document.getElementById('res-dob').innerText = dobValue;
         document.getElementById('res-id').innerText = khoaThiValue;
@@ -359,26 +319,41 @@
 
         document.getElementById('quiz-screen').style.display = 'none';
         document.getElementById('caee-header').style.display = 'none';
-        document.getElementById('timer').style.display = 'none';
+        document.getElementById('warning-overlay').style.display = 'none'; // Ẩn overlay khi nộp bài
         document.getElementById('result-screen').style.display = 'flex';
 
         const formData = new URLSearchParams();
+        formData.append('maThi', maThiValue);
         formData.append('name', nameValue);
         formData.append('birthDate', dobValue);
         formData.append('khoaThi', khoaThiValue);
-        formData.append('ngheName', ngheValue); 
+        formData.append('ngheName', ngheValue);
         formData.append('score', score + "/30");
         formData.append('status', status);
         formData.append('viPham', cheatCount);
 
-        fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
+        try {
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors", 
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData.toString()
+            });
+        } catch (e) {
+            console.error("Lỗi gửi dữ liệu:", e);
+        }
 
         let c = 15;
         const cdInterval = setInterval(() => { 
-            if(c > 0) { c--; document.getElementById('countdown').innerText = c; } 
-            else { clearInterval(cdInterval); location.reload(); }
+            if(c > 0) { 
+                c--; 
+                document.getElementById('countdown').innerText = c; 
+            } else { 
+                clearInterval(cdInterval); 
+                location.reload(); 
+            }
         }, 1000);
     }
 </script>
 </body>
-</html>
+</html> 
