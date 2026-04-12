@@ -130,7 +130,7 @@
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
    
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx0CSkInWXN1NE9Xo5_MNAOesWiTv8ZDsaOIL66N2xlxPOOaZSWBKet0y4wea2RHaVK/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwhuVBXOci4ucVgm9p3kVH1ivKNNT_R1u-6su9qy3ghevaSolfVAYRvZllDhTPSpNcw/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -156,38 +156,26 @@
     window.onfocus = () => { document.getElementById('warning-overlay').style.display = 'none'; };
 
   async function validateAndStart() {
-        const maThi = document.getElementById('maThi').value.trim();
-        const nameValue = document.getElementById('studentName').value.trim().toUpperCase();
-        const dob = document.getElementById('studentDOB').value.trim();
-        
-        // Lấy thông tin nghề nghiệp và chế độ thi
-        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
-        const isOnTap = document.getElementById('modeToggle').checked;
-        const ngheFullCheck = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
+    const maThi = document.getElementById('maThi').value.trim();
+    const name = document.getElementById('studentName').value.trim();
+    const dob = document.getElementById('studentDOB').value.trim();
+    const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+    const isOnTap = document.getElementById('modeToggle').checked;
+    const ngheFull = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
 
-        if(!nameValue || !maThi || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
-        
-        const btn = document.getElementById('btnStart');
-        btn.disabled = true; btn.innerText = "ĐANG KIỂM TRA...";
+    if(!name || !maThi || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
+    
+    const btn = document.getElementById('btnStart');
+    btn.disabled = true; btn.innerText = "ĐANG KIỂM TRA...";
 
-        try {
-            // SỬA LỖI: Dùng dấu huyền (backtick) và truyền name, ngheName vào URL
-            const url = `${WEB_APP_URL}?action=checkCode&code=${encodeURIComponent(maThi)}&name=${encodeURIComponent(nameValue)}&ngheName=${encodeURIComponent(ngheFullCheck)}`;
-            const res = await fetch(url);
-            const result = await res.json();
-            
-            if(result.isValid) {
-                startQuiz();
-            } else { 
-                alert(result.message || "Mã thi không đúng!"); 
-                btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; 
-            }
-        } catch(e) { 
-            alert("Lỗi kết nối Server! Vui lòng thử lại."); 
-            btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; 
-        }
-    }
-
+    try {
+        // Gửi kèm Tên và Nghề ngay khi checkCode để báo "ĐANG THI"
+        const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${encodeURIComponent(maThi)}&name=${encodeURIComponent(name)}&ngheName=${encodeURIComponent(ngheFull)}`);
+        const result = await res.json();
+        if(result.isValid) startQuiz();
+        else { alert(result.message || "Mã thi không đúng!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
+    } catch(e) { alert("Lỗi kết nối Server!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
+}
     function startQuiz() {
         if(allQuestions.length === 0) return alert("Vui lòng đợi dữ liệu tải...");
         selectedQuestions = allQuestions.sort(() => 0.5 - Math.random()).slice(0, 30);
@@ -302,18 +290,17 @@
         document.getElementById('caee-header').style.display = 'none';
         document.getElementById('result-screen').style.display = 'flex';
 
-        const formData = new URLSearchParams();
-        formData.append('name', nameValue);
-        formData.append('birthDate', dobValue);
-        formData.append('khoaThi', khoaThiValue);
-        
-        // Gửi chuỗi Nghề đã được sửa chuẩn (có (ÔN TẬP) hoặc (THI)) về Sheets
-        formData.append('ngheName', ngheValue); 
-        
-        formData.append('score', score + "/30");
-        formData.append('status', status);
-        formData.append('viPham', cheatCount);
-fetch(`${WEB_APP_URL}?action=checkCode&code=${codeValue}&name=${nameValue}&ngheName=${fullJobName}`)
+       const formData = new URLSearchParams();
+    formData.append('maThi', document.getElementById('maThi').value.trim()); // Gửi mã thi để cập nhật trạng thái
+    formData.append('name', nameValue);
+    formData.append('birthDate', dobValue);
+    formData.append('khoaThi', khoaThiValue);
+    formData.append('ngheName', ngheValue);
+    formData.append('score', score + "/30");
+    formData.append('status', status);
+    formData.append('viPham', cheatCount);
+
+    fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: formData });
 
         let c = 15;
         const cdInterval = setInterval(() => { 
