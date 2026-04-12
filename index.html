@@ -15,93 +15,90 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         
-        /* CẬP NHẬT: Mặc định body có ảnh nền cho màn hình đăng nhập */
         body { 
             background-color: var(--light-bg); 
-            background-image: url('https://lh3.googleusercontent.com/d/1SAsEre0-zW6n-4H2q1-L3jU5-fR_J8D5'); /* Link ảnh xưởng thực hành của bạn */
+            background-image: url('https://lh3.googleusercontent.com/d/1SAsEre0-zW6n-4H2q1-L3jU5-fR_J8D5');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            background-repeat: no-repeat;
             font-family: 'Segoe UI', Arial, sans-serif; 
             overflow-x: hidden; 
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        /* Lớp CSS để xóa ảnh nền khi vào màn hình thi */
-        body.quiz-mode {
-            background-image: none !important;
-            background-color: var(--light-bg);
-            display: block; /* Trở về dòng chảy bình thường để hiển thị nội dung thi */
-        }
+        body.quiz-mode { background-image: none !important; }
 
-        #warning-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(220, 53, 69, 0.85); backdrop-filter: blur(8px);
-            color: white; z-index: 10000;
-            flex-direction: column; justify-content: center; align-items: center; text-align: center;
-        }
-        .warning-box { padding: 30px; border-radius: 20px; }
-        .warning-icon { font-size: 5rem; margin-bottom: 15px; animation: pulse 1.5s infinite; }
-        .warning-title { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
-        .warning-text { font-size: 1.3rem; opacity: 0.95; margin-bottom: 20px; }
-        #cheat-count-msg { font-weight: bold; background: rgba(0,0,0,0.3); padding: 8px 20px; border-radius: 50px; font-size: 1.1rem; }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
+        /* --- CẬP NHẬT: THU NHỎ HEADER --- */
         .caee-header {
-            background: var(--header-blue); color: white; padding: 10px 20px;
-            display: none; justify-content: space-between; align-items: center;
-            position: fixed; top: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            background: var(--header-blue); 
+            color: white; 
+            padding: 5px 10px; /* Giảm padding tối đa */
+            display: none; 
+            justify-content: space-between; 
+            align-items: center;
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            z-index: 1000; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            height: 50px; /* Khóa chiều cao header thấp xuống */
         }
-        .timer-box { background: #ff3333; padding: 5px 15px; border-radius: 4px; font-weight: bold; min-width: 80px; text-align: center; }
-
-        #start-screen { width: 100%; display: flex; justify-content: center; align-items: center; }
         
-        /* Hiệu ứng kính mờ cho container đăng nhập */
-        .welcome-container { 
-            background: rgba(255, 255, 255, 0.92); 
-            backdrop-filter: blur(10px);
-            width: 95%; 
-            max-width: 450px; 
-            border-radius: 20px; 
-            padding: 30px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2); 
-            border: 1px solid rgba(255,255,255,0.3);
+        .header-info { flex-grow: 1; text-align: center; line-height: 1.2; }
+        .header-school { font-weight: bold; font-size: 11px; text-transform: uppercase; }
+        .header-job { font-weight: bold; font-size: 12px; color: #ffd700; }
+        .header-user { font-size: 11px; }
+
+        .timer-box { 
+            background: #ff3333; 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            min-width: 55px; 
+            text-align: center; 
         }
 
+        /* --- TỐI ƯU KHÔNG GIAN CÂU HỎI --- */
+        #quiz-screen { 
+            padding: 10px; 
+            display: none; 
+            grid-template-columns: 1fr 320px; 
+            gap: 15px; 
+            max-width: 1300px; 
+            margin: auto; 
+            padding-top: 60px; /* Giảm khoảng cách phía trên do header đã nhỏ lại */
+        }
+
+        #quiz-content { 
+            background: white; 
+            padding: 15px; /* Giảm padding bên trong câu hỏi */
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+
+        #quiz-content h3 { font-size: 1.1rem; margin-bottom: 15px; } /* Thu nhỏ tiêu đề câu hỏi */
+
+        .option-item {
+            padding: 10px 12px; /* Thu gọn đáp án */
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 900px) { 
+            #quiz-screen { grid-template-columns: 1fr; padding-top: 55px; } 
+            .sidebar-right { order: 2; }
+            #quiz-content { order: 1; }
+        }
+
+        /* Các CSS khác giữ nguyên... */
+        #start-screen { min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .welcome-container { background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); width: 95%; max-width: 450px; border-radius: 20px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
         .form-control { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
         .btn-start { background: var(--success); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
-        
-        #quiz-screen { padding: 20px; display: none; grid-template-columns: 1fr 320px; gap: 20px; max-width: 1300px; margin: auto; padding-top: 80px; }
-        #quiz-content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 400px; }
-        
-        .option-item {
-            border: 2px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 12px;
-            cursor: pointer; transition: 0.2s; font-weight: 500; display: flex; align-items: center;
-        }
-        .option-item:hover:not(.disabled) { border-color: var(--btn-blue); background: #f0f7ff; }
-        .option-item.selected { background: #e7f0ff; border-color: var(--btn-blue); color: var(--caee-blue); box-shadow: inset 0 0 0 1px var(--btn-blue); }
-        .option-item.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; }
-        .option-item.wrong { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; }
-
+        #warning-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(220, 53, 69, 0.85); backdrop-filter: blur(8px); color: white; z-index: 10000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         #result-screen { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
-        .result-card { background: white; width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.5s ease-out; }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .score-circle { width: 110px; height: 110px; border-radius: 50%; border: 6px solid #eee; margin: 15px auto; display: flex; flex-direction: column; justify-content: center; font-size: 2rem; font-weight:bold; color: var(--header-blue); }
-        .status-badge { display: inline-block; padding: 8px 25px; border-radius: 50px; color: white; font-weight: bold; margin-bottom: 20px; }
-        .notice-text { background: #fff3cd; color: #856404; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; line-height: 1.4; text-align: center; }
-        .q-image-box img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; }
-
-        @media (max-width: 900px) { #quiz-screen { grid-template-columns: 1fr; padding-top: 80px; } }
+        .result-card { background: white; width: 100%; max-width: 450px; border-radius: 24px; padding: 30px; text-align: center; }
     </style>
 </head>
 <body oncontextmenu="return false">
@@ -110,16 +107,15 @@
         <div class="warning-box">
             <div class="warning-icon">⚠️</div>
             <div class="warning-title">PHÁT HIỆN GIAN LẬN!</div>
-            <div class="warning-text">Vui lòng quay lại màn hình thi ngay lập tức.</div>
             <div id="cheat-count-msg"></div>
         </div>
     </div>
 
     <div class="caee-header" id="caee-header">
-        <div style="flex-grow: 1; text-align: center;">
-            <div style="font-weight: bold; font-size: 14px;">TRƯỜNG CAO ĐẲNG CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
-            <div id="job-display-header" style="font-weight: bold; font-size: 14px; color: #ffd700;">ĐANG TẢI...</div>
-            <div style="font-size: 13px;">HỌC VIÊN: <span id="display-name" style="font-weight: bold;">---</span></div>
+        <div class="header-info">
+            <div class="header-school">TRƯỜNG CĐ CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
+            <div id="job-display-header" class="header-job">ĐANG TẢI...</div>
+            <div class="header-user">Học viên: <span id="display-name" style="font-weight: bold;">---</span></div>
         </div>
         <div id="timer" class="timer-box">20:00</div>
     </div>
@@ -127,8 +123,8 @@
     <div id="start-screen">
         <div class="welcome-container">
             <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 15px; color: #1a73e8; font-weight: bold;">TRƯỜNG CĐ CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
-                <div style="font-size: 15px; color: #d32f2f; font-weight: 800; margin-top: 5px; text-transform: uppercase;">KHOA MÁY THI CÔNG</div>
+                <div style="font-size: 14px; color: #1a73e8; font-weight: bold;">TRƯỜNG CĐ CƠ ĐIỆN NÔNG NGHIỆP VÀ MÔI TRƯỜNG</div>
+                <div style="font-size: 16px; color: #d32f2f; font-weight: 800; margin-top: 5px; text-transform: uppercase;">KHOA MÁY THI CÔNG</div>
             </div>
             <select id="jobType" class="form-control" style="font-weight: bold;" onchange="preloadQuestions()">
                 <option value="1538604642">VẬN HÀNH XE NÂNG HÀNG</option>
@@ -152,34 +148,13 @@
     <div id="quiz-screen">
         <div id="quiz-content"></div>
         <div class="sidebar-right">
-            <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
-                <h4 style="margin-bottom:15px; text-align:center;">SƠ ĐỒ CÂU HỎI</h4>
-                <div id="nav-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;"></div>
-                <button id="submitBtn" class="btn-start" style="margin-top:20px; background-color: var(--caee-blue);" onclick="submitQuiz()">NỘP BÀI</button>
+            <div style="background:white; padding:15px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.05);">
+                <h4 style="margin-bottom:10px; text-align:center; font-size: 0.9rem;">SƠ ĐỒ CÂU HỎI</h4>
+                <div id="nav-grid" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:5px;"></div>
+                <button id="submitBtn" class="btn-start" style="margin-top:15px; padding:10px; background-color: var(--caee-blue);" onclick="submitQuiz()">NỘP BÀI</button>
             </div>
         </div>
     </div>
-
-    <div id="result-screen">
-        <div class="result-card">
-            <div style="font-size: 1.5rem; font-weight: bold; color: var(--caee-blue); margin-bottom: 20px;">KẾT QUẢ THI</div>
-            <div style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6; text-align: center;">
-                Học viên: <b id="res-name" style="color: var(--caee-blue); text-transform: uppercase;">---</b><br>
-                Ngày sinh: <b id="res-dob">---</b><br>
-                Khóa thi: <b id="res-id">---</b>
-            </div>
-            <div class="score-circle">
-                <span id="res-score">0</span>
-                <small style="font-size: 0.8rem; color: #666; font-weight: normal;">/ 30 câu</small>
-            </div>
-            <div id="res-badge" class="status-badge">---</div>
-            <div class="notice-text">
-                KẾT QUẢ NÀY ĐƯỢC NHÀ TRƯỜNG LƯU LẠI VÀ DÙNG ĐỂ XÉT CẤP CHỨNG CHỈ SƠ CẤP NGHỀ.
-            </div>
-            <p style="margin-top: 25px; color: #666; font-size: 0.85rem;">Hệ thống tự đóng sau <span id="countdown">15</span> giây...</p>
-        </div>
-    </div>
-
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfyvPJPnpoP-NWtTga_qGtu584AHGe0MVWYLu5_v8sgqHksrAXEfBDNs99lHUuqOGh/exec";
