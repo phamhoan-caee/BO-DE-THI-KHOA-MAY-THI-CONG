@@ -157,19 +157,31 @@
 
     async function validateAndStart() {
         const maThi = document.getElementById('maThi').value.trim();
-        const name = document.getElementById('studentName').value.trim();
-        const dob = document.getElementById('studentDOB').value.trim();
-        if(!name || !maThi || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
+        const name = document.getElementById('studentName').value.trim().toUpperCase();
+        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+        const isOnTap = document.getElementById('modeToggle').checked;
+        const ngheFull = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
+
+        if(!name || !maThi) return alert("Vui lòng nhập đầy đủ Họ tên và Mã thi!");
         
         const btn = document.getElementById('btnStart');
         btn.disabled = true; btn.innerText = "ĐANG KIỂM TRA...";
 
         try {
-            const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${maThi}`);
+            // SỬA LỖI: Dùng dấu huyền ` và truyền đầy đủ name, ngheName
+            const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${encodeURIComponent(maThi)}&name=${encodeURIComponent(name)}&ngheName=${encodeURIComponent(ngheFull)}`);
             const result = await res.json();
-            if(result.isValid) startQuiz();
-            else { alert("Mã thi không đúng!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
-        } catch(e) { alert("Lỗi kết nối Server! Vui lòng thử lại."); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
+            
+            if(result.isValid) {
+                startQuiz();
+            } else { 
+                alert(result.message || "Mã thi không đúng!"); 
+                btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; 
+            }
+        } catch(e) { 
+            alert("Lỗi kết nối Server!"); 
+            btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; 
+        }
     }
 
     function startQuiz() {
