@@ -129,8 +129,8 @@
 
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
-
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyiHQdiczAYNgLmFF9dk4yOPozOSTDcb_kPJOlnMT9InOCm5fjaDyhOINTWAnrLv1k/exec";
+    // URL Web App của anh Hoàn
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx0CSkInWXN1NE9Xo5_MNAOesWiTv8ZDsaOIL66N2xlxPOOaZSWBKet0y4wea2RHaVK/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -157,31 +157,19 @@
 
     async function validateAndStart() {
         const maThi = document.getElementById('maThi').value.trim();
-        const name = document.getElementById('studentName').value.trim().toUpperCase();
-        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
-        const isOnTap = document.getElementById('modeToggle').checked;
-        const ngheFull = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
-
-        if(!name || !maThi) return alert("Vui lòng nhập đầy đủ Họ tên và Mã thi!");
+        const name = document.getElementById('studentName').value.trim();
+        const dob = document.getElementById('studentDOB').value.trim();
+        if(!name || !maThi || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
         
         const btn = document.getElementById('btnStart');
         btn.disabled = true; btn.innerText = "ĐANG KIỂM TRA...";
 
         try {
-            // SỬA LỖI: Dùng dấu huyền ` và truyền đầy đủ name, ngheName
-            const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${encodeURIComponent(maThi)}&name=${encodeURIComponent(name)}&ngheName=${encodeURIComponent(ngheFull)}`);
+            const res = await fetch(`${WEB_APP_URL}?action=checkCode&code=${maThi}`);
             const result = await res.json();
-            
-            if(result.isValid) {
-                startQuiz();
-            } else { 
-                alert(result.message || "Mã thi không đúng!"); 
-                btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; 
-            }
-        } catch(e) { 
-            alert("Lỗi kết nối Server!"); 
-            btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; 
-        }
+            if(result.isValid) startQuiz();
+            else { alert("Mã thi không đúng!"); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
+        } catch(e) { alert("Lỗi kết nối Server! Vui lòng thử lại."); btn.disabled = false; btn.innerText = "VÀO THI NGAY ➔"; }
     }
 
     function startQuiz() {
@@ -259,10 +247,13 @@
         clearInterval(timerInterval); isSubmitted = true;
         
         // Lấy dữ liệu học viên đã nhập
-       const nameForCheck = document.getElementById('studentName').value.toUpperCase().trim();
-const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
-const isOnTap = document.getElementById('modeToggle').checked;
-const ngheForCheck = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
+        const nameValue = String(document.getElementById('studentName').value).toUpperCase().trim();
+        const dobValue = String(document.getElementById('studentDOB').value).trim();
+        const khoaThiValue = String(document.getElementById('khoaThi').value).trim();
+        
+        // --- SỬA LỖI Ở ĐÂY ---
+        // Lấy tên nghề cơ bản (ví dụ: VẬN HÀNH XE NÂNG HÀNG)
+        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
         
         // Kiểm tra chế độ ôn tập
         const isOnTap = document.getElementById('modeToggle').checked;
@@ -306,8 +297,8 @@ const ngheForCheck = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)"
         formData.append('score', score + "/30");
         formData.append('status', status);
         formData.append('viPham', cheatCount);
+fetch(`${WEB_APP_URL}?action=checkCode&code=${codeValue}&name=${nameValue}&ngheName=${fullJobName}`)
 
-    fetch(`${WEB_APP_URL}?action=checkCode&code=${codeValue}&name=${encodeURIComponent(tenHocVien)}&ngheName=${encodeURIComponent(tenNghe)}`)
         let c = 15;
         const cdInterval = setInterval(() => { 
             if(c > 0) { c--; document.getElementById('countdown').innerText = c; } 
