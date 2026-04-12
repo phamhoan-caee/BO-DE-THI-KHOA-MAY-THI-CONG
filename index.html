@@ -247,13 +247,10 @@
         clearInterval(timerInterval); isSubmitted = true;
         
         // Lấy dữ liệu học viên đã nhập
-        const nameValue = String(document.getElementById('studentName').value).toUpperCase().trim();
-        const dobValue = String(document.getElementById('studentDOB').value).trim();
-        const khoaThiValue = String(document.getElementById('khoaThi').value).trim();
-        
-        // --- SỬA LỖI Ở ĐÂY ---
-        // Lấy tên nghề cơ bản (ví dụ: VẬN HÀNH XE NÂNG HÀNG)
-        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+       const nameForCheck = document.getElementById('studentName').value.toUpperCase().trim();
+const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+const isOnTap = document.getElementById('modeToggle').checked;
+const ngheForCheck = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
         
         // Kiểm tra chế độ ôn tập
         const isOnTap = document.getElementById('modeToggle').checked;
@@ -298,7 +295,7 @@
         formData.append('status', status);
         formData.append('viPham', cheatCount);
 
-       fetch(`${WEB_APP_URL}?action=checkCode&code=${codeValue}&name=${encodeURIComponent(nameValue)}&ngheName=${encodeURIComponent(ngheValue)}`)
+    fetch(`${WEB_APP_URL}?action=checkCode&code=${codeValue}&name=${encodeURIComponent(tenHocVien)}&ngheName=${encodeURIComponent(tenNghe)}`)
         let c = 15;
         const cdInterval = setInterval(() => { 
             if(c > 0) { c--; document.getElementById('countdown').innerText = c; } 
