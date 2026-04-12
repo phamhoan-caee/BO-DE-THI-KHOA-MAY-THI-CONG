@@ -130,7 +130,7 @@
 <script>
     const BASE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs5CSEsuNg_OtjJbzTmAxQ__5EyVZFe7axrAa1KW9bTAM6dSRNclBRdz1zKXUOZpmfVvQRwU5RRuiN/pub?output=csv&gid=";
    
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyJtlReRIaPx9IoMjXW96lrH14WvuHBR3UzKTBwo0LdzdvBWR6eoz9jc-oJD_WN4PE/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfyvPJPnpoP-NWtTga_qGtu584AHGe0MVWYLu5_v8sgqHksrAXEfBDNs99lHUuqOGh/exec";
     
     let allQuestions = [], selectedQuestions = [], studentAnswers = [];
     let currentQuestionIndex = 0, timeLeft = 1200, timerInterval, isSubmitted = false, cheatCount = 0;
@@ -248,29 +248,19 @@
 
     async function submitQuiz(auto = false) {
         if(!auto && !confirm("Bạn có chắc chắn muốn nộp bài?")) return;
-        clearInterval(timerInterval); isSubmitted = true;
+        clearInterval(timerInterval); 
+        isSubmitted = true;
         
-        // Lấy dữ liệu học viên đã nhập
-        const nameValue = String(document.getElementById('studentName').value).toUpperCase().trim();
-        const dobValue = String(document.getElementById('studentDOB').value).trim();
-        const khoaThiValue = String(document.getElementById('khoaThi').value).trim();
-        
-        // --- SỬA LỖI Ở ĐÂY ---
-        // Lấy tên nghề cơ bản (ví dụ: VẬN HÀNH XE NÂNG HÀNG)
-        const rawNghe = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
-        
-        // Kiểm tra chế độ ôn tập
-        const isOnTap = document.getElementById('modeToggle').checked;
-        
-        // Tạo chuỗi Nghề đầy đủ để gửi về Sheets
-        let ngheValue;
-        if (isOnTap) {
-            ngheValue = "NGHỀ: " + rawNghe + " (ÔN TẬP)";
-        } else {
-            ngheValue = "NGHỀ: " + rawNghe + " (THI)";
-        }
-        // ---------------------
+        // 1. Lấy và chuẩn hóa dữ liệu
+        const maThiValue = document.getElementById('maThi').value.trim().toUpperCase();
+        const nameValue  = document.getElementById('studentName').value.toUpperCase().trim();
+        const dobValue   = document.getElementById('studentDOB').value.trim();
+        const khoaThiValue = document.getElementById('khoaThi').value.trim();
+        const rawNghe    = document.getElementById('jobType').options[document.getElementById('jobType').selectedIndex].text;
+        const isOnTap    = document.getElementById('modeToggle').checked;
+        const ngheValue  = "NGHỀ: " + rawNghe + (isOnTap ? " (ÔN TẬP)" : " (THI)");
 
+        // 2. Tính điểm
         let score = 0;
         selectedQuestions.forEach((q, i) => {
             const ans = studentAnswers.find(a => a.qIndex === i);
@@ -279,6 +269,8 @@
         });
 
         const status = score >= 25 ? "ĐẠT" : "KHÔNG ĐẠT";
+
+        // 3. Hiển thị màn hình kết quả ngay lập tức để học viên không bấm nộp nhiều lần
         document.getElementById('res-name').innerText = nameValue;
         document.getElementById('res-dob').innerText = dobValue;
         document.getElementById('res-id').innerText = khoaThiValue;
@@ -290,28 +282,39 @@
         document.getElementById('caee-header').style.display = 'none';
         document.getElementById('result-screen').style.display = 'flex';
 
-       const formData = new URLSearchParams();
-    formData.append('maThi', document.getElementById('maThi').value.trim()); // Gửi mã thi để cập nhật trạng thái
-    formData.append('name', nameValue);
-    formData.append('birthDate', dobValue);
-    formData.append('khoaThi', khoaThiValue);
-    formData.append('ngheName', ngheValue);
-    formData.append('score', score + "/30");
-    formData.append('status', status);
-    formData.append('viPham', cheatCount);
+        // 4. GỬI DỮ LIỆU VỀ GOOGLE SHEETS (Kích hoạt logic tăng số lượt thi tại cột E)
+        const formData = new URLSearchParams();
+        formData.append('maThi', maThiValue);
+        formData.append('name', nameValue);
+        formData.append('birthDate', dobValue);
+        formData.append('khoaThi', khoaThiValue);
+        formData.append('ngheName', ngheValue);
+        formData.append('score', score + "/30");
+        formData.append('status', status);
+        formData.append('viPham', cheatCount);
 
-fetch(WEB_APP_URL, {
-    method: "POST",
-    mode: "no-cors", // Giữ nguyên để tránh lỗi CORS
-    headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: formData.toString() // Quan trọng: Phải toString() khi dùng URLSearchParams
-});
+        try {
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors", 
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData.toString()
+            });
+            console.log("Dữ liệu đã được gửi và số lượt thi sẽ được cập nhật.");
+        } catch (e) {
+            console.error("Lỗi gửi dữ liệu:", e);
+        }
+
+        // 5. Đếm ngược tự động tải lại trang
         let c = 15;
         const cdInterval = setInterval(() => { 
-            if(c > 0) { c--; document.getElementById('countdown').innerText = c; } 
-            else { clearInterval(cdInterval); location.reload(); }
+            if(c > 0) { 
+                c--; 
+                document.getElementById('countdown').innerText = c; 
+            } else { 
+                clearInterval(cdInterval); 
+                location.reload(); 
+            }
         }, 1000);
     }
 </script>
